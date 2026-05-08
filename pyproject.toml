@@ -1,0 +1,90 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "backtest-lie-detector"
+version = "0.1.0"
+description = "Benchmarking LLMs as Point-in-Time Auditors for Financial Research"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+authors = [
+    {name = "UChicago Generative AI for Finance Team"}
+]
+keywords = [
+    "llm",
+    "benchmark",
+    "finance",
+    "backtesting",
+    "point-in-time",
+    "audit"
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "pydantic>=2.0",
+    "pandas>=2.0",
+    "numpy>=1.24",
+    "matplotlib>=3.7",
+    "seaborn>=0.12",
+    "tqdm>=4.65",
+    "python-dotenv>=1.0",
+    "openai>=1.0",
+    "anthropic>=0.18",
+    "httpx>=0.25",
+    "tenacity>=8.2",
+    "jsonlines>=4.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4",
+    "pytest-cov>=4.0",
+    "black>=23.0",
+    "ruff>=0.1.0",
+]
+app = [
+    "streamlit>=1.30",
+]
+notebooks = [
+    "jupyter>=1.0",
+    "ipykernel>=6.0",
+]
+all = [
+    "backtest-lie-detector[dev,app,notebooks]",
+]
+
+[project.scripts]
+run-eval = "backtest_lie_detector.evals.run_eval:main"
+
+[project.urls]
+Homepage = "https://github.com/your-org/backtest-lie-detector"
+Documentation = "https://github.com/your-org/backtest-lie-detector#readme"
+Repository = "https://github.com/your-org/backtest-lie-detector"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_functions = "test_*"
+addopts = "-v --tb=short"
+
+[tool.black]
+line-length = 100
+target-version = ["py310", "py311", "py312"]
+
+[tool.ruff]
+line-length = 100
+select = ["E", "F", "I", "W"]
+ignore = ["E501"]
