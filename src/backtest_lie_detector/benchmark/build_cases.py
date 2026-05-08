@@ -828,11 +828,21 @@ ADDITIONAL_SURVIVORSHIP_CASES = [
 ]
 
 
-def generate_all_cases() -> list[BenchmarkCase]:
+def generate_all_cases(
+    include_adversarial: bool = True,
+    include_wrds: bool = True,
+    include_hard: bool = False
+) -> list[BenchmarkCase]:
     """
     Generate the complete benchmark dataset.
     
-    Combines seed cases with additional cases for each module.
+    Combines seed cases with additional cases for each module,
+    plus adversarial, WRDS-backed, and hard cases.
+    
+    Args:
+        include_adversarial: Include adversarial cases (v2).
+        include_wrds: Include WRDS data-backed cases (v2).
+        include_hard: Include genuinely hard source-backed cases (v3).
     
     Returns:
         List of all benchmark cases.
@@ -845,12 +855,52 @@ def generate_all_cases() -> list[BenchmarkCase]:
     all_cases.extend(ADDITIONAL_ACCOUNTING_CASES)
     all_cases.extend(ADDITIONAL_SURVIVORSHIP_CASES)
     
+    # Add adversarial cases (v2)
+    if include_adversarial:
+        try:
+            from backtest_lie_detector.benchmark.adversarial_cases import ADVERSARIAL_CASES
+            all_cases.extend(ADVERSARIAL_CASES)
+        except ImportError:
+            pass
+    
+    # Add WRDS-backed cases (v2)
+    if include_wrds:
+        try:
+            from backtest_lie_detector.benchmark.wrds_cases import WRDS_BACKED_CASES
+            all_cases.extend(WRDS_BACKED_CASES)
+        except ImportError:
+            pass
+    
+    # Add hard source-backed cases (v3)
+    if include_hard:
+        try:
+            from backtest_lie_detector.benchmark.hard_cases import HARD_CASES
+            all_cases.extend(HARD_CASES)
+        except ImportError:
+            pass
+    
     # Ensure unique IDs
     ids = [c.id for c in all_cases]
     if len(ids) != len(set(ids)):
-        raise ValueError("Duplicate case IDs found!")
+        duplicates = [id for id in ids if ids.count(id) > 1]
+        raise ValueError(f"Duplicate case IDs found: {set(duplicates)}")
     
     return all_cases
+
+
+def generate_v1_cases() -> list[BenchmarkCase]:
+    """Generate original v1 benchmark (42 cases)."""
+    return generate_all_cases(include_adversarial=False, include_wrds=False, include_hard=False)
+
+
+def generate_v2_cases() -> list[BenchmarkCase]:
+    """Generate enhanced v2 benchmark with adversarial and WRDS cases."""
+    return generate_all_cases(include_adversarial=True, include_wrds=True, include_hard=False)
+
+
+def generate_v3_cases() -> list[BenchmarkCase]:
+    """Generate v3 benchmark with all case types including hard source-backed cases."""
+    return generate_all_cases(include_adversarial=True, include_wrds=True, include_hard=True)
 
 
 def print_benchmark_summary(cases: list[BenchmarkCase]) -> None:
@@ -885,9 +935,21 @@ def print_benchmark_summary(cases: list[BenchmarkCase]) -> None:
 
 
 if __name__ == "__main__":
-    # Generate and save the benchmark
-    cases = generate_all_cases()
-    print_benchmark_summary(cases)
+    import sys
     
-    output_path = "data/benchmark/benchmark_v1.jsonl"
+    # Determine which version to generate
+    if len(sys.argv) > 1 and sys.argv[1] == "v1":
+        print("Generating v1 benchmark (original 42 cases)...")
+        cases = generate_v1_cases()
+        output_path = "data/benchmark/benchmark_v1.jsonl"
+    else:
+        print("Generating v2 benchmark (with adversarial + WRDS cases)...")
+        cases = generate_v2_cases()
+        output_path = "data/benchmark/benchmark_v2.jsonl"
+    
+    print_benchmark_summary(cases)
     save_benchmark(cases, output_path)
+    
+    # Also save a sample
+    sample_path = output_path.replace(".jsonl", "_sample.jsonl")
+    save_benchmark(cases[:25], sample_path)

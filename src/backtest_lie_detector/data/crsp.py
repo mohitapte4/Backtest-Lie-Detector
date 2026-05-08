@@ -1,20 +1,23 @@
 """
 CRSP data access utilities.
 
-Placeholder for WRDS CRSP data validation functions.
-These are optional and used only for validating benchmark ground truth.
+Provides WRDS CRSP data queries for ticker history, delistings,
+and benchmark case validation/generation.
 """
 
+import os
 from typing import Optional
 from datetime import date
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 class CRSPData:
     """
-    Interface for CRSP data queries.
+    Interface for CRSP data queries via WRDS.
     
-    This is a placeholder class. Full implementation would require
-    WRDS credentials and the wrds package.
+    Requires WRDS credentials set via environment variables or .env file.
     """
     
     def __init__(self, wrds_username: Optional[str] = None):
@@ -22,10 +25,11 @@ class CRSPData:
         Initialize CRSP data connection.
         
         Args:
-            wrds_username: WRDS username for database connection.
+            wrds_username: WRDS username. If None, reads from WRDS_USERNAME env var.
         """
-        self.wrds_username = wrds_username
+        self.wrds_username = wrds_username or os.getenv("WRDS_USERNAME")
         self._connected = False
+        self._conn = None
     
     def connect(self) -> bool:
         """
@@ -38,6 +42,7 @@ class CRSPData:
             import wrds
             self._conn = wrds.Connection(wrds_username=self.wrds_username)
             self._connected = True
+            print(f"Connected to WRDS as {self.wrds_username}")
             return True
         except ImportError:
             print("wrds package not installed. Install with: pip install wrds")
@@ -150,6 +155,128 @@ class CRSPData:
             return None
         
         return df.iloc[0].to_dict()
+    
+    def get_ticker_changes(self, min_year: int = 2000) -> list[dict]:
+        """
+        Find stocks that had ticker changes.
+        
+        Args:
+            min_year: Minimum year to search from.
+        
+        Returns:
+            List of ticker change records.
+        """
+        if not self._connected:
+            raise RuntimeError("Not connected to WRDS")
+        
+        query = f"""
+        WITH ticker_counts AS (
+            SELECT permno, COUNT(DISTINCT ticker) as num_tickers
+            FROM crsp.stocknames
+            WHERE namedt >= '{min_year}-01-01'
+            GROUP BY permno
+            HAVING COUNT(DISTINCT ticker) > 1
+        )
+        SELECT s.permno, s.ticker, s.namedt, s.nameendt, s.comnam
+        FROM crsp.stocknames s
+        INNER JOIN ticker_counts tc ON s.permno = tc.permno
+        WHERE s.namedt >= '{min_year}-01-01'
+        ORDER BY s.permno, s.namedt
+        """
+        
+        df = self._conn.raw_sql(query)
+        return df.to_dict('records')
+    
+    def get_notable_delistings(
+        self,
+        min_year: int = 2000,
+        dlstcd_min: int = 400,
+        dlstcd_max: int = 599
+    ) -> list[dict]:
+        """
+        Get notable delistings (bankruptcies, liquidations).
+        
+        Args:
+            min_year: Minimum year.
+            dlstcd_min: Minimum delisting code (400 = liquidation).
+            dlstcd_max: Maximum delisting code (599 = dropped).
+        
+        Returns:
+            List of delisting records with company names.
+        """
+        if not self._connected:
+            raise RuntimeError("Not connected to WRDS")
+        
+        query = f"""
+        SELECT d.permno, d.dlstdt, d.dlret, d.dlstcd, s.ticker, s.comnam
+        FROM crsp.dsedelist d
+        LEFT JOIN (
+            SELECT permno, ticker, comnam
+            FROM crsp.stocknames
+            WHERE nameendt = (
+                SELECT MAX(nameendt) FROM crsp.stocknames s2 
+                WHERE s2.permno = crsp.stocknames.permno
+            )
+        ) s ON d.permno = s.permno
+        WHERE d.dlstdt >= '{min_year}-01-01'
+          AND d.dlstcd BETWEEN {dlstcd_min} AND {dlstcd_max}
+        ORDER BY d.dlstdt DESC
+        LIMIT 50
+        """
+        
+        df = self._conn.raw_sql(query)
+        return df.to_dict('records')
+    
+    def get_company_by_name(self, name_pattern: str) -> list[dict]:
+        """
+        Search for companies by name pattern.
+        
+        Args:
+            name_pattern: SQL LIKE pattern for company name.
+        
+        Returns:
+            List of matching company records.
+        """
+        if not self._connected:
+            raise RuntimeError("Not connected to WRDS")
+        
+        query = f"""
+        SELECT DISTINCT permno, ticker, comnam, namedt, nameendt
+        FROM crsp.stocknames
+        WHERE UPPER(comnam) LIKE UPPER('%{name_pattern}%')
+        ORDER BY namedt DESC
+        LIMIT 20
+        """
+        
+        df = self._conn.raw_sql(query)
+        return df.to_dict('records')
+    
+    def get_famous_ticker_histories(self) -> dict:
+        """
+        Get ticker histories for famous companies with known changes.
+        
+        Returns:
+            Dictionary of company name to ticker history.
+        """
+        if not self._connected:
+            raise RuntimeError("Not connected to WRDS")
+        
+        # Famous companies with known ticker changes
+        famous = {
+            "Meta/Facebook": "SELECT * FROM crsp.stocknames WHERE permno = 13407 ORDER BY namedt",
+            "Alphabet/Google": "SELECT * FROM crsp.stocknames WHERE permno IN (90319, 93436) ORDER BY namedt",
+            "AT&T": "SELECT * FROM crsp.stocknames WHERE ticker = 'T' ORDER BY namedt",
+        }
+        
+        results = {}
+        for name, query in famous.items():
+            try:
+                df = self._conn.raw_sql(query)
+                results[name] = df.to_dict('records')
+            except Exception as e:
+                results[name] = {"error": str(e)}
+        
+        return results
 
 
 # Known ticker changes for validation without WRDS
