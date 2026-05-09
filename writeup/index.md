@@ -8,17 +8,17 @@
 
 Large Language Models are increasingly used to write, review, and audit trading strategies and financial research. But can they catch the subtle data leakage issues that invalidate backtests? We created a benchmark to find out.
 
-**Key Findings (V4 Benchmark):**
+**Key Findings (V5 Benchmark - Final):**
 > 1. LLMs are excellent at catching obvious violations but **overly cautious** on edge cases
-> 2. **Simpler prompts outperform specialized ones** - a surprising prompt engineering paradox
+> 2. **Simple vs specialized prompts**: Generic prompts have higher accuracy on average, but **specialized prompts catch 100% of subtle violations**
 > 3. Models struggle to express uncertainty when the correct answer is ambiguous
+> 4. **The prompt engineering paradox is nuanced** - V5 false valid traps show specialized prompts matter for hard cases
 
-**Results Summary:**
-- **GPT-4o achieves 83.2% accuracy** with a generic prompt (vs 79.2% with specialized prompt)
-- **~1% false valid rate** - both prompts almost never approve truly invalid workflows
-- **22-37% false invalid rate** - specialized prompts are more cautious (worse)
-- **~25% ambiguous accuracy** - models rarely identify genuinely ambiguous cases
-- **73% trap-valid accuracy** with generic prompt (vs 59% with specialized)
+**V5 Results Summary (141 cases):**
+- **GPT-4o (Generic):** 83.0% accuracy, 4.7% false valid rate
+- **GPT-4o (Specialized):** 80.9% accuracy, **0.0% false valid rate**
+- **Claude Sonnet:** 78.0% accuracy, 1.2% false valid rate
+- **On 16 subtle false-valid-trap cases:** Generic missed 3, Specialized/Claude missed 0
 
 ---
 
@@ -39,38 +39,39 @@ These errors are easy to make and hard to catch. A backtest can look perfectly r
 
 ---
 
-## Benchmark Evolution: V1 → V4
+## Benchmark Evolution: V1 → V5
 
-Our benchmark evolved over four iterations to create increasingly challenging tests:
+Our benchmark evolved over five iterations to create increasingly challenging tests:
 
 | Version | Cases | Description | Key Finding |
 |---------|-------|-------------|-------------|
 | V1 | 42 | Original seed cases | 97.6% accuracy - too easy |
 | V2 | 69 | +17 adversarial, +10 WRDS | 95.7% accuracy - harder |
 | V3 | 105 | +36 hard source-backed | 84.8% accuracy - challenging |
-| **V4** | **125** | +20 calibration-focused | **79.2% accuracy** - overcaution revealed |
+| V4 | 125 | +20 calibration-focused | 79.2% accuracy - overcaution revealed |
+| **V5** | **141** | +16 false valid traps | **Nuanced findings on prompt engineering** |
 
-### V4 Benchmark Structure
+### V5 Benchmark Structure
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    V4 Benchmark Structure (125 cases)                │
+│                    V5 Benchmark Structure (141 cases)                │
 ├─────────────────────┬──────────────────┬───────────────────────────┤
 │ Ticker Time Machine │ Filing Clock     │ Accounting Availability   │
-│ (45 cases)          │ (27 cases)       │ (21 cases)                │
+│ (48 cases)          │ (31 cases)       │ (24 cases)                │
 ├─────────────────────┴──────────────────┴───────────────────────────┤
-│              Survivorship & Delisting (32 cases)                    │
+│              Survivorship & Delisting (38 cases)                    │
 ├─────────────────────────────────────────────────────────────────────┤
-│  Expected Validity:  Valid: 41  |  Invalid: 70  |  Ambiguous: 14   │
+│  Expected Validity:  Valid: 41  |  Invalid: 86  |  Ambiguous: 14   │
 ├─────────────────────────────────────────────────────────────────────┤
-│  Special Tags:  trap_valid: 22  |  ambiguous: 14  |  multi: 8      │
+│  Special Tags:  trap_valid: 22 | false_valid_trap: 16 | near_miss: 17 │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-**V4 Calibration Cases:**
-- **8 Valid Trap Cases**: Look suspicious but are actually correct
-- **8 Ambiguous Cases**: Correct answer is "needs more information"  
-- **4 Hard Invalid Cases**: Subtle but real violations
+**V5 False Valid Trap Cases (16 new):**
+- Workflows with **professional language** that sounds point-in-time valid
+- Hidden **implementation-level bugs** requiring dataset semantics knowledge
+- All labeled as `invalid` but designed to trigger **false valid errors**
 
 ---
 
@@ -251,12 +252,69 @@ See `outputs/results/failure_casebook.md` for detailed analysis of 10 instructiv
 
 ### Key Figures (in `outputs/figures/`)
 
-1. **v4_multimodel_comparison.png** - 3-model accuracy and metrics comparison
-2. **v4_llm_vs_baselines.png** - LLMs vs rule-based baselines
-3. **v4_tradeoff_scatter.png** - Safety vs utility trade-off visualization
-4. **v4_prompt_comparison.png** - Generic vs specialized prompt analysis
-5. **v4_calibration_breakdown.png** - Accuracy by validity type and tags
-6. **v4_difficulty_breakdown.png** - Easy/Medium/Hard performance
+**V5 Figures:**
+1. **v5_overall.png** - V5 accuracy, false invalid, and false valid rates
+2. **v5_false_valid_traps.png** - Performance on the 16 subtle trap cases
+3. **v5_vs_v4_comparison.png** - How false valid rates changed with new cases
+4. **v5_nuanced_finding.png** - Performance by case difficulty type
+
+**V4 Figures:**
+5. **v4_multimodel_comparison.png** - 3-model accuracy and metrics comparison
+6. **v4_llm_vs_baselines.png** - LLMs vs rule-based baselines
+7. **v4_tradeoff_scatter.png** - Safety vs utility trade-off visualization
+
+---
+
+## V5 Results: The Prompt Engineering Reversal
+
+V4 found that generic prompts outperform specialized prompts. **V5 adds nuance to this finding.**
+
+### False Valid Trap Case Results
+
+We designed 16 new cases that sound professional and valid but contain subtle implementation bugs:
+
+| Model | Trap Accuracy | False Valids | Cases Missed |
+|-------|--------------|--------------|--------------|
+| Claude Sonnet | **100%** | 0/16 | None |
+| GPT-4o (Specialized) | **93.8%** | 0/16 | None (1 flagged ambiguous) |
+| GPT-4o (Generic) | 81.2% | **3/16** | 3 subtle bugs missed |
+
+### Cases GPT-4o Generic Missed
+
+| Case | Bug | Reassuring Language |
+|------|-----|---------------------|
+| `fvt_lag_from_datadate` | Uses 6-month lag from fiscal end instead of filing date | "lags fundamentals by 6 months" |
+| `fvt_adjusted_price_level` | Uses split-adjusted prices for $5 price filter | "uses split-adjusted prices" |
+| `fvt_current_industry` | Uses 2026 GICS codes for 2000-2020 backtest | "controls for industry effects" |
+
+### The Nuanced Finding
+
+**V4 conclusion (simplified):** "Generic prompts beat specialized prompts"
+
+**V5 conclusion (nuanced):**
+- For **obvious violations**: Generic prompts work fine and avoid overcaution
+- For **subtle violations**: Specialized prompts significantly improve detection
+- **Zero false valid rate** with specialized prompt across all 141 cases
+
+### V4 vs V5 False Valid Rate Comparison
+
+| Model | V4 FVR (125 cases) | V5 FVR (141 cases) | Change |
+|-------|-------------------|-------------------|--------|
+| GPT-4o (Generic) | 1.4% | **4.7%** | **+3.2%** |
+| GPT-4o (Specialized) | 0.0% | **0.0%** | 0.0% |
+| Claude Sonnet | 1.4% | 1.2% | -0.2% |
+
+The false valid trap cases increased the generic prompt's false valid rate from 1.4% to 4.7%, while the specialized prompt maintained perfect safety.
+
+### Practical Recommendation (Revised)
+
+| Use Case | Recommended Prompt |
+|----------|-------------------|
+| Maximum safety (zero tolerance for false valids) | **Specialized** |
+| Best accuracy-caution tradeoff | Generic |
+| Repair suggestions important | Claude Sonnet |
+| Simple/obvious cases | Generic |
+| Complex methodology with reassuring language | **Specialized** |
 
 ---
 
@@ -265,7 +323,7 @@ See `outputs/results/failure_casebook.md` for detailed analysis of 10 instructiv
 1. **Two models tested** - GPT-4o and Claude Sonnet; more models would strengthen conclusions
 2. **Two prompt variants** - More prompt engineering could yield better results
 3. **Ground truth requires domain expertise** - Some trap valid cases have debatable answers (see protocol above)
-4. **Benchmark size** - 125 cases covers main patterns but not exhaustively
+4. **Benchmark size** - 141 cases covers main patterns but not exhaustively
 5. **No fine-tuning** - Using base model capabilities only
 6. **English only** - All prompts and cases in English
 
@@ -281,14 +339,17 @@ git clone https://github.com/your-org/backtest-lie-detector
 cd backtest-lie-detector
 pip install -e ".[all]"
 
-# Generate V4 benchmark
-python -m backtest_lie_detector.benchmark.build_cases v4
+# Generate V5 benchmark
+python -m backtest_lie_detector.benchmark.build_cases v5
 
-# Run V4 evaluation
-python run_v4_comparison.py
+# Run V5 evaluation (only new cases - saves API calls)
+python run_v5_newcases_only.py
 
-# Generate figures
-python generate_v4_figures.py
+# Combine with V4 results and compute metrics
+python compute_v5_metrics.py
+
+# Generate V5 figures
+python generate_v5_figures.py
 ```
 
 ### Benchmark Versions
@@ -296,31 +357,40 @@ python generate_v4_figures.py
 - `benchmark_v2.jsonl`: 69 cases (+adversarial, +WRDS)
 - `benchmark_v3.jsonl`: 105 cases (+hard source-backed)
 - `benchmark_v4.jsonl`: 125 cases (+calibration-focused)
+- `benchmark_v5.jsonl`: **141 cases** (+16 false valid traps)
 
 ### Output Files
-- `outputs/results/scores_v4.csv` - Per-case results
-- `outputs/results/calibration_scores_v4.csv` - Calibration metrics
+- `outputs/results/V5_RESULTS.md` - Complete V5 results summary
+- `outputs/results/model_outputs_v5_*.jsonl` - Per-model V5 results
 - `outputs/results/failure_casebook.md` - Detailed failure analysis
-- `outputs/figures/v4_*.png` - Visualization plots
+- `outputs/figures/v5_*.png` - V5 visualization plots
 
 ---
 
 ## Conclusion
 
-**Main Findings:** 
+**Main Findings (V5):** 
 1. LLMs are reliable at catching obvious point-in-time violations (~99% catch rate)
-2. Overcaution is the primary failure mode (22-44% false invalid rate)
-3. **Simpler prompts perform better** than detailed domain expert prompts
+2. Overcaution is the primary failure mode (20-44% false invalid rate)
+3. **Prompt engineering matters, but is context-dependent:**
+   - Generic prompts: higher overall accuracy, but miss subtle violations
+   - Specialized prompts: lower accuracy due to overcaution, but **0% false valid rate**
 4. **Accuracy and repair quality are inversely correlated** - Claude has lowest accuracy but best repairs
+5. **Subtle violations require domain expertise** - generic prompts missed 3/16 false valid trap cases
 
-**Practical Recommendation:** Use LLMs as a first-pass screening tool with the understanding that:
-- "Valid" verdicts can be trusted (~1% false valid rate across all models)
-- "Invalid" verdicts require human review (22-44% false alarm rate)
-- Consider GPT-4o with generic prompts for best accuracy-caution tradeoff
-- Consider Claude Sonnet when repair suggestions are important
-- "Ambiguous" is under-reported (models default to invalid)
+**Practical Recommendations:**
 
-**Compared to Baselines:** LLMs dramatically outperform rule-based approaches (1.4% vs 81% false valid rate), demonstrating genuine understanding beyond keyword matching. However, even "always invalid" achieves 56% accuracy, contextualizing that the benchmark has a strong invalid case prevalence.
+| Priority | Recommendation |
+|----------|---------------|
+| **Maximum Safety** | Use specialized prompt (0% false valid rate) |
+| **Best Accuracy** | Use generic prompt (83% accuracy) |
+| **Best Repairs** | Use Claude Sonnet (67% correct repairs) |
+| **Subtle/Complex Cases** | Use specialized prompt |
+| **Simple/Obvious Cases** | Use generic prompt |
+
+**The V5 insight:** The V4 finding that "generic beats specialized" was partially an artifact of obvious invalid cases. When we added 16 subtle violations with professional language, the generic prompt failed on 3 cases while specialized and Claude caught all 16.
+
+**Compared to Baselines:** LLMs dramatically outperform rule-based approaches (0-4.7% vs 81% false valid rate), demonstrating genuine understanding beyond keyword matching.
 
 ---
 

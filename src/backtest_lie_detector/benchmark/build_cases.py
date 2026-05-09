@@ -978,10 +978,71 @@ def print_v4_summary(cases: list[BenchmarkCase]) -> None:
     
     # Calibration breakdown
     print(f"\nCalibration Breakdown:")
-    trap_valid = len([c for c in cases if hasattr(c, 'case_tags') and 'trap_valid' in c.case_tags])
-    ambiguous = len([c for c in cases if hasattr(c, 'case_tags') and 'ambiguous' in c.case_tags])
+    trap_valid = len([c for c in cases if hasattr(case, 'case_tags') and 'trap_valid' in c.case_tags])
+    ambiguous = len([c for c in cases if hasattr(case, 'case_tags') and 'ambiguous' in c.case_tags])
     print(f"  trap_valid cases: {trap_valid}")
     print(f"  ambiguous cases: {ambiguous}")
+
+
+def generate_v5_cases() -> list[BenchmarkCase]:
+    """
+    Generate v5 benchmark with false valid trap cases.
+    
+    V5 includes:
+    - All v4 cases (125)
+    - False valid trap cases (16): subtle invalid cases designed to trigger false valids
+    
+    Total: 141 cases
+    """
+    v4_cases = generate_v4_cases()
+    
+    try:
+        from backtest_lie_detector.benchmark.false_valid_traps import FALSE_VALID_TRAP_CASES
+        all_cases = v4_cases + FALSE_VALID_TRAP_CASES
+    except ImportError:
+        all_cases = v4_cases
+    
+    # Ensure unique IDs
+    ids = [c.id for c in all_cases]
+    if len(ids) != len(set(ids)):
+        duplicates = [id for id in ids if ids.count(id) > 1]
+        raise ValueError(f"Duplicate case IDs found: {set(duplicates)}")
+    
+    return all_cases
+
+
+def get_false_valid_trap_cases_only() -> list[BenchmarkCase]:
+    """Get only the false valid trap cases for incremental evaluation."""
+    from backtest_lie_detector.benchmark.false_valid_traps import FALSE_VALID_TRAP_CASES
+    return FALSE_VALID_TRAP_CASES
+
+
+def print_v5_summary(cases: list[BenchmarkCase]) -> None:
+    """Print V5-specific summary with false valid trap metrics."""
+    print_benchmark_summary(cases)
+    
+    # Count by tags
+    print(f"\nBy Case Tags:")
+    tag_counts = {}
+    for case in cases:
+        if hasattr(case, 'case_tags'):
+            for tag in case.case_tags:
+                tag_counts[tag] = tag_counts.get(tag, 0) + 1
+    
+    for tag, count in sorted(tag_counts.items(), key=lambda x: -x[1]):
+        print(f"  {tag}: {count}")
+    
+    # V5 breakdown
+    print(f"\nV5 Breakdown:")
+    trap_valid = len([c for c in cases if hasattr(c, 'case_tags') and 'trap_valid' in c.case_tags])
+    ambiguous = len([c for c in cases if hasattr(c, 'case_tags') and 'ambiguous' in c.case_tags])
+    false_valid_trap = len([c for c in cases if hasattr(c, 'case_tags') and 'false_valid_trap' in c.case_tags])
+    near_miss = len([c for c in cases if hasattr(c, 'case_tags') and 'near_miss' in c.case_tags])
+    
+    print(f"  trap_valid cases: {trap_valid}")
+    print(f"  ambiguous cases: {ambiguous}")
+    print(f"  false_valid_trap cases: {false_valid_trap}")
+    print(f"  near_miss cases: {near_miss}")
 
 
 if __name__ == "__main__":
@@ -992,24 +1053,33 @@ if __name__ == "__main__":
         print("Generating v1 benchmark (original 42 cases)...")
         cases = generate_v1_cases()
         output_path = "data/benchmark/benchmark_v1.jsonl"
+        print_benchmark_summary(cases)
     elif len(sys.argv) > 1 and sys.argv[1] == "v2":
         print("Generating v2 benchmark (with adversarial + WRDS cases)...")
         cases = generate_v2_cases()
         output_path = "data/benchmark/benchmark_v2.jsonl"
+        print_benchmark_summary(cases)
     elif len(sys.argv) > 1 and sys.argv[1] == "v3":
         print("Generating v3 benchmark (with hard source-backed cases)...")
         cases = generate_v3_cases()
         output_path = "data/benchmark/benchmark_v3.jsonl"
-    else:
-        # Default to v4
+        print_benchmark_summary(cases)
+    elif len(sys.argv) > 1 and sys.argv[1] == "v4":
         print("Generating v4 benchmark (with calibration cases)...")
         cases = generate_v4_cases()
         output_path = "data/benchmark/benchmark_v4.jsonl"
-    
-    if output_path.endswith("v4.jsonl"):
         print_v4_summary(cases)
+    elif len(sys.argv) > 1 and sys.argv[1] == "v5":
+        print("Generating v5 benchmark (with false valid trap cases)...")
+        cases = generate_v5_cases()
+        output_path = "data/benchmark/benchmark_v5.jsonl"
+        print_v5_summary(cases)
     else:
-        print_benchmark_summary(cases)
+        # Default to v5 (latest)
+        print("Generating v5 benchmark (with false valid trap cases)...")
+        cases = generate_v5_cases()
+        output_path = "data/benchmark/benchmark_v5.jsonl"
+        print_v5_summary(cases)
     
     save_benchmark(cases, output_path)
     

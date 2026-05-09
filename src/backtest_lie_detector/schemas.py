@@ -39,6 +39,7 @@ class Validity(str, Enum):
 class ViolationType(str, Enum):
     """Types of point-in-time violations that can occur in financial workflows."""
     
+    # Original violation types
     IDENTIFIER_TIME_TRAVEL = "identifier_time_travel"
     ISSUER_SECURITY_CONFUSION = "issuer_security_confusion"
     FILING_CLOCK_LEAKAGE = "filing_clock_leakage"
@@ -48,6 +49,16 @@ class ViolationType(str, Enum):
     DELISTING_RETURN_OMISSION = "delisting_return_omission"
     WRONG_EVENT_WINDOW = "wrong_event_window"
     TIMEZONE_ERROR = "timezone_error"
+    
+    # V5 violation types for subtle implementation bugs
+    LINK_DATE_LEAKAGE = "link_date_leakage"  # CCM linkdt/linkenddt ignored
+    DELISTING_RETURN_CONSTRUCTION = "delisting_return_construction"  # DLRET combination error
+    ADJUSTED_PRICE_MISUSE = "adjusted_price_misuse"  # Adjusted price for level triggers
+    CURRENT_METADATA_LEAKAGE = "current_metadata_leakage"  # Current industry/exchange codes
+    INDEX_TIMING_LEAKAGE = "index_timing_leakage"  # Announce vs effective date
+    FORECAST_TIMING_LEAKAGE = "forecast_timing_leakage"  # IBES availability timing
+    INTRADAY_DATA_LEAKAGE = "intraday_data_leakage"  # Future intraday data used
+    CORPORATE_ACTION_TIMING = "corporate_action_timing"  # M&A announce vs complete
 
 
 class SourceFields(BaseModel):
