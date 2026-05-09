@@ -40,7 +40,9 @@ Return ONLY the JSON object. Do not include any text before or after the JSON.
 # =============================================================================
 
 SYSTEM_PROMPT_MINIMAL = """
-You are a financial research auditor. Analyze the provided workflow and return your assessment as JSON.
+You are a financial research auditor. Analyze the provided workflow and determine if it has any point-in-time validity issues.
+
+{response_format}
 """.strip()
 
 SYSTEM_PROMPT_DEFAULT = """
@@ -152,8 +154,8 @@ def get_system_prompt(
     
     Args:
         prompt_type: Type of system prompt to use.
-            - "minimal": Very brief instructions
-            - "default": Standard auditor instructions
+            - "minimal": Brief instructions with response format only
+            - "default": Standard auditor instructions with examples
             - "finance_auditor": Detailed expert auditor with specific guidance
     
     Returns:
@@ -166,6 +168,7 @@ def get_system_prompt(
     else:  # finance_auditor
         base_prompt = SYSTEM_PROMPT_FINANCE_AUDITOR
     
+    # All prompts now include response format
     return base_prompt.format(response_format=RESPONSE_FORMAT_INSTRUCTIONS)
 
 

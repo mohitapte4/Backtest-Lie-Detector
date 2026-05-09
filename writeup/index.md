@@ -8,15 +8,17 @@
 
 Large Language Models are increasingly used to write, review, and audit trading strategies and financial research. But can they catch the subtle data leakage issues that invalidate backtests? We created a benchmark to find out.
 
-**Key Finding (V4 Benchmark):**
-> LLMs are excellent at catching obvious point-in-time violations, but they are **overly cautious** and struggle to distinguish truly invalid workflows from valid-but-suspicious ones. They also struggle to express uncertainty when the correct answer is ambiguous.
+**Key Findings (V4 Benchmark):**
+> 1. LLMs are excellent at catching obvious violations but **overly cautious** on edge cases
+> 2. **Simpler prompts outperform specialized ones** - a surprising prompt engineering paradox
+> 3. Models struggle to express uncertainty when the correct answer is ambiguous
 
 **Results Summary:**
-- **GPT-4o achieves 79.2% overall accuracy** on our 125-case V4 benchmark
-- **Zero false valids** - the model never approves a truly invalid workflow
-- **29% false invalid rate** - valid workflows are frequently flagged incorrectly
-- **21% ambiguous accuracy** - the model rarely identifies genuinely ambiguous cases
-- **59% trap-valid accuracy** - sophisticated valid cases frequently trigger false alarms
+- **GPT-4o achieves 83.2% accuracy** with a generic prompt (vs 79.2% with specialized prompt)
+- **~1% false valid rate** - both prompts almost never approve truly invalid workflows
+- **22-37% false invalid rate** - specialized prompts are more cautious (worse)
+- **~25% ambiguous accuracy** - models rarely identify genuinely ambiguous cases
+- **73% trap-valid accuracy** with generic prompt (vs 59% with specialized)
 
 ---
 
@@ -92,26 +94,28 @@ V3/V4 includes hard cases based on real-world finance traps:
 
 ---
 
-## V4 Results: The Overcaution Discovery
+## V4 Results: The Prompt Engineering Paradox
 
 ### Overall Performance
 
 | Configuration | Validity Accuracy | False Invalid Rate | Ambiguous Accuracy |
 |---------------|-------------------|--------------------|--------------------|
-| GPT-4o (Finance Auditor) | **79.2%** | 29.3% | 21.4% |
-| GPT-4o (Generic) | 0%* | N/A | N/A |
+| GPT-4o (Specialized Finance Auditor) | 79.2% | 36.6% | 28.6% |
+| GPT-4o (Generic Minimal Prompt) | **83.2%** | **22.0%** | 21.4% |
 
-*Generic prompt failed to produce parseable JSON responses
+### The Surprising Finding: Simpler Is Better
+
+The generic prompt **outperformed** the specialized finance auditor prompt by 4 percentage points. This reveals a **prompt engineering paradox**: detailed domain expertise in the prompt may *increase* overcaution.
 
 ### The Key Insight: Asymmetric Errors
 
-| Error Type | Count | Rate | Implication |
-|------------|-------|------|-------------|
-| False Valids (missed violations) | **0** | 0% | Model is safe |
-| False Invalids (overcautious) | 12 | 29.3% of valid cases | Model is cautious |
-| Ambiguous → Invalid | 10 | 71.4% of ambiguous | Model avoids uncertainty |
+| Error Type | Specialized | Generic | Implication |
+|------------|-------------|---------|-------------|
+| False Valids (missed violations) | 1.4% | 1.4% | Both very safe |
+| False Invalids (overcautious) | 36.6% | 22.0% | Specialized is more cautious |
+| Valid Trap Accuracy | 59.1% | 72.7% | Generic handles edge cases better |
 
-**The model never approves a truly invalid workflow**, but it frequently flags valid workflows as problematic.
+**Both prompts almost never approve truly invalid workflows** (1.4% false valid rate), but the specialized prompt's extensive guidance about pitfalls makes it more likely to flag valid workflows as problematic.
 
 ### Performance by Case Tag
 
@@ -163,17 +167,18 @@ See `outputs/results/failure_casebook.md` for detailed analysis of 10 instructiv
 
 ### For Researchers Using LLMs as Auditors
 
-1. **Trust "valid" verdicts** - zero false valid rate means approval is reliable
-2. **Scrutinize "invalid" verdicts** - 29% are false alarms, review carefully
-3. **Treat "ambiguous" as "might be valid"** - model under-reports ambiguity
-4. **Provide detailed methodology** - unclear descriptions trigger false positives
-5. **Explain your adjustments explicitly** - "using CRSP adjusted returns" helps
+1. **Trust "valid" verdicts** - ~1% false valid rate means approval is reliable
+2. **Scrutinize "invalid" verdicts** - 22-37% are false alarms, review carefully
+3. **Consider simpler prompts** - detailed domain prompts may increase false positives
+4. **Treat "ambiguous" as "might be valid"** - model under-reports ambiguity
+5. **Provide detailed methodology** - unclear descriptions trigger false positives
 
 ### For LLM Developers
 
 1. **Calibration matters** - models should express uncertainty appropriately
 2. **Dataset semantics training needed** - CRSP/Compustat field meanings
 3. **"Safe" ≠ "Good"** - overcaution reduces practical utility
+4. **Prompt engineering is counterintuitive** - more expertise in prompt can hurt
 
 ### For Finance Education
 
@@ -199,7 +204,7 @@ See `outputs/results/failure_casebook.md` for detailed analysis of 10 instructiv
 ## Limitations
 
 1. **Single model tested** - Only GPT-4o on V4 (Claude requires API access)
-2. **Prompt sensitivity** - Generic prompt completely fails to produce valid JSON
+2. **Two prompt variants** - More prompt engineering could yield better results
 3. **Ground truth ambiguity** - Some "trap valid" cases have debatable answers
 4. **Benchmark size** - 125 cases covers main patterns but not exhaustively
 5. **No fine-tuning** - Using base model capabilities only
@@ -243,14 +248,18 @@ python generate_v4_figures.py
 
 ## Conclusion
 
-**Main Finding:** LLMs are reliable at catching obvious point-in-time violations but suffer from significant overcaution when evaluating sophisticated, valid methodologies.
+**Main Findings:** 
+1. LLMs are reliable at catching obvious point-in-time violations (~99% catch rate)
+2. Overcaution is the primary failure mode (22-37% false invalid rate)
+3. **Simpler prompts perform better** than detailed domain expert prompts
 
 **Practical Recommendation:** Use LLMs as a first-pass screening tool with the understanding that:
-- "Valid" verdicts can be trusted (0% false valid rate)
-- "Invalid" verdicts require human review (29% false alarm rate)
+- "Valid" verdicts can be trusted (~1% false valid rate)
+- "Invalid" verdicts require human review (22-37% false alarm rate depending on prompt)
+- Consider using minimal prompts to reduce overcaution
 - "Ambiguous" is under-reported (model defaults to invalid)
 
-The benchmark reveals that financial domain knowledge - specifically understanding dataset semantics (CRSP adjusted returns, Compustat fields) and corporate action handling - remains a gap in current LLMs.
+The benchmark reveals that financial domain knowledge - specifically understanding dataset semantics (CRSP adjusted returns, Compustat fields) and corporate action handling - remains a gap in current LLMs. However, adding this knowledge to the prompt may paradoxically make the model *more* cautious rather than more accurate.
 
 ---
 
