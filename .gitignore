@@ -66,3 +66,19 @@ secrets.json
 *.csv
 *.parquet
 !data/benchmark/*.csv
+
+# Submission files (IEEE CIFEr 2026)
+submission_supplement/
+IEEE-conference-template-062824.tex
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.out
+*.synctex.gz
+*.toc
+*.lof
+*.lot
+*.pdf
+figures/*.drawio
