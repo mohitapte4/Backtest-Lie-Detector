@@ -152,6 +152,14 @@ class BenchmarkCase(BaseModel):
         default="manual",
         description="Source of the case data (manual, WRDS CRSP, SEC EDGAR, etc.)"
     )
+    case_tags: list[str] = Field(
+        default_factory=list,
+        description="Tags for case categorization (e.g., trap_valid, ambiguous, multi_violation)"
+    )
+    source_note: str = Field(
+        default="",
+        description="Citation or source reference for ground truth"
+    )
     
     @field_validator("expected_violations", mode="before")
     @classmethod

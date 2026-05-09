@@ -903,6 +903,33 @@ def generate_v3_cases() -> list[BenchmarkCase]:
     return generate_all_cases(include_adversarial=True, include_wrds=True, include_hard=True)
 
 
+def generate_v4_cases() -> list[BenchmarkCase]:
+    """
+    Generate v4 benchmark with calibration-focused cases.
+    
+    V4 includes:
+    - All v3 cases (105)
+    - Calibration cases (20): 8 valid trap, 8 ambiguous, 4 hard invalid
+    
+    Total: 125 cases
+    """
+    v3_cases = generate_v3_cases()
+    
+    try:
+        from backtest_lie_detector.benchmark.calibration_cases import CALIBRATION_CASES
+        all_cases = v3_cases + CALIBRATION_CASES
+    except ImportError:
+        all_cases = v3_cases
+    
+    # Ensure unique IDs
+    ids = [c.id for c in all_cases]
+    if len(ids) != len(set(ids)):
+        duplicates = [id for id in ids if ids.count(id) > 1]
+        raise ValueError(f"Duplicate case IDs found: {set(duplicates)}")
+    
+    return all_cases
+
+
 def print_benchmark_summary(cases: list[BenchmarkCase]) -> None:
     """Print summary statistics for the benchmark."""
     print(f"\nBenchmark Summary")
@@ -934,6 +961,29 @@ def print_benchmark_summary(cases: list[BenchmarkCase]) -> None:
         print(f"  {vtype.value}: {count}")
 
 
+def print_v4_summary(cases: list[BenchmarkCase]) -> None:
+    """Print V4-specific summary with calibration metrics."""
+    print_benchmark_summary(cases)
+    
+    # Count by tags
+    print(f"\nBy Case Tags:")
+    tag_counts = {}
+    for case in cases:
+        if hasattr(case, 'case_tags'):
+            for tag in case.case_tags:
+                tag_counts[tag] = tag_counts.get(tag, 0) + 1
+    
+    for tag, count in sorted(tag_counts.items(), key=lambda x: -x[1]):
+        print(f"  {tag}: {count}")
+    
+    # Calibration breakdown
+    print(f"\nCalibration Breakdown:")
+    trap_valid = len([c for c in cases if hasattr(c, 'case_tags') and 'trap_valid' in c.case_tags])
+    ambiguous = len([c for c in cases if hasattr(c, 'case_tags') and 'ambiguous' in c.case_tags])
+    print(f"  trap_valid cases: {trap_valid}")
+    print(f"  ambiguous cases: {ambiguous}")
+
+
 if __name__ == "__main__":
     import sys
     
@@ -942,12 +992,25 @@ if __name__ == "__main__":
         print("Generating v1 benchmark (original 42 cases)...")
         cases = generate_v1_cases()
         output_path = "data/benchmark/benchmark_v1.jsonl"
-    else:
+    elif len(sys.argv) > 1 and sys.argv[1] == "v2":
         print("Generating v2 benchmark (with adversarial + WRDS cases)...")
         cases = generate_v2_cases()
         output_path = "data/benchmark/benchmark_v2.jsonl"
+    elif len(sys.argv) > 1 and sys.argv[1] == "v3":
+        print("Generating v3 benchmark (with hard source-backed cases)...")
+        cases = generate_v3_cases()
+        output_path = "data/benchmark/benchmark_v3.jsonl"
+    else:
+        # Default to v4
+        print("Generating v4 benchmark (with calibration cases)...")
+        cases = generate_v4_cases()
+        output_path = "data/benchmark/benchmark_v4.jsonl"
     
-    print_benchmark_summary(cases)
+    if output_path.endswith("v4.jsonl"):
+        print_v4_summary(cases)
+    else:
+        print_benchmark_summary(cases)
+    
     save_benchmark(cases, output_path)
     
     # Also save a sample

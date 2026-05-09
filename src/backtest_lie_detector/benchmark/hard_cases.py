@@ -1316,24 +1316,110 @@ EARNINGS_TIMING_CASES = [
 
 
 # =============================================================================
-# Collect all hard cases
+# CASE TAGS MAPPING
+# Maps case IDs to their appropriate tags
 # =============================================================================
 
-HARD_CASES: list[BenchmarkCase] = (
-    TICKER_REASSIGNMENT_CASES +
-    SECURITY_REORGANIZATION_CASES +
-    FB_META_TIMING_CASES +
-    GOOG_GOOGL_CASES +
-    IBM_KYNDRYL_CASES +
-    SEC_FILING_CLOCK_CASES +
-    SP_INDEX_TIMING_CASES +
-    ERRONEOUS_ANNOUNCEMENT_CASES +
-    COMPUSTAT_PIT_CASES +
-    AS_FILED_VS_STANDARDIZED_CASES +
-    ADJUSTED_PRICE_CASES +
-    DELISTING_RETURN_CASES +
-    EARNINGS_TIMING_CASES
-)
+HARD_CASE_TAGS: dict[str, list[str]] = {
+    # Ticker reassignment
+    "hard_ticker_s_continuous_2004_2006": ["multi_violation", "requires_identifier_reasoning"],
+    "hard_ticker_s_permno_resolved": ["trap_valid", "requires_identifier_reasoning"],
+    "hard_ticker_c_citi_2009": ["trap_valid", "requires_corporate_action_reasoning"],
+    
+    # Security reorganization
+    "hard_manville_permno_stitch": ["multi_violation", "requires_corporate_action_reasoning"],
+    "hard_gm_old_new_2009": ["multi_violation", "requires_corporate_action_reasoning"],
+    
+    # FB-META timing
+    "hard_meta_rebrand_dec2021": ["requires_identifier_reasoning", "near_miss"],
+    "hard_meta_planned_postponed": ["trap_valid", "requires_identifier_reasoning"],
+    "hard_meta_june9_intraday": ["trap_valid", "requires_identifier_reasoning", "requires_timestamp_reasoning"],
+    
+    # GOOG vs GOOGL
+    "hard_goog_proxy_vote_study": ["requires_identifier_reasoning", "requires_corporate_action_reasoning"],
+    "hard_googl_earnings_reaction": ["trap_valid", "requires_identifier_reasoning"],
+    "hard_goog_pre_2014": ["multi_violation", "requires_identifier_reasoning", "requires_corporate_action_reasoning"],
+    
+    # IBM/Kyndryl
+    "hard_ibm_kyndryl_price_only": ["multi_violation", "requires_corporate_action_reasoning"],
+    "hard_ibm_crsp_adjusted_return": ["trap_valid", "requires_corporate_action_reasoning", "requires_dataset_semantics"],
+    "hard_kyndryl_nov3_price": ["ambiguous", "requires_timestamp_reasoning"],
+    
+    # SEC filing clock
+    "hard_filing_530pm_nextday": ["ambiguous", "requires_timestamp_reasoning"],
+    "hard_filing_517pm_sameday": ["trap_valid", "requires_timestamp_reasoning"],
+    "hard_filing_before_6am": ["trap_valid", "requires_timestamp_reasoning"],
+    "hard_filing_acceptance_vs_dissemination": ["ambiguous", "requires_timestamp_reasoning"],
+    
+    # S&P index timing
+    "hard_sp500_announcement_515pm": ["requires_timestamp_reasoning"],
+    "hard_sp500_announcement_day_trade": ["trap_valid", "requires_timestamp_reasoning"],
+    "hard_sp500_effective_date_list": ["trap_valid"],
+    
+    # Erroneous announcements
+    "hard_index_erroneous_list": ["ambiguous", "requires_dataset_semantics"],
+    
+    # Compustat PIT
+    "hard_compustat_2026_for_2012": ["requires_dataset_semantics"],
+    "hard_compustat_snapshot_correct": ["trap_valid", "requires_dataset_semantics"],
+    "hard_compustat_restandardization": ["requires_dataset_semantics"],
+    
+    # As-filed vs standardized
+    "hard_xbrl_compustat_difference": ["requires_dataset_semantics"],
+    "hard_factset_compustat_consistent": ["ambiguous", "requires_dataset_semantics"],
+    
+    # Adjusted price
+    "hard_adjusted_price_level_rule": ["requires_dataset_semantics"],
+    "hard_adjusted_price_return_calc": ["trap_valid", "requires_dataset_semantics"],
+    "hard_adjusted_price_base_date": ["requires_dataset_semantics"],
+    
+    # Delisting return
+    "hard_delisting_missing_drop": ["multi_violation"],
+    "hard_delisting_zero_fill": [],
+    "hard_delisting_conservative_impute": ["trap_valid"],
+    
+    # Earnings timing
+    "hard_earnings_uniform_window": ["requires_timestamp_reasoning"],
+    "hard_earnings_timestamp_window": ["trap_valid", "requires_timestamp_reasoning"],
+    "hard_earnings_intraday_window": ["ambiguous", "requires_timestamp_reasoning"],
+}
+
+
+def apply_tags_to_hard_cases() -> list[BenchmarkCase]:
+    """Apply case_tags to all hard cases based on the mapping."""
+    all_cases = (
+        TICKER_REASSIGNMENT_CASES +
+        SECURITY_REORGANIZATION_CASES +
+        FB_META_TIMING_CASES +
+        GOOG_GOOGL_CASES +
+        IBM_KYNDRYL_CASES +
+        SEC_FILING_CLOCK_CASES +
+        SP_INDEX_TIMING_CASES +
+        ERRONEOUS_ANNOUNCEMENT_CASES +
+        COMPUSTAT_PIT_CASES +
+        AS_FILED_VS_STANDARDIZED_CASES +
+        ADJUSTED_PRICE_CASES +
+        DELISTING_RETURN_CASES +
+        EARNINGS_TIMING_CASES
+    )
+    
+    tagged_cases = []
+    for case in all_cases:
+        # Create a copy with tags
+        tags = HARD_CASE_TAGS.get(case.id, [])
+        case_dict = case.model_dump()
+        case_dict['case_tags'] = tags
+        case_dict['source_note'] = "Source-backed hard case for v3/v4 benchmark"
+        tagged_cases.append(BenchmarkCase(**case_dict))
+    
+    return tagged_cases
+
+
+# =============================================================================
+# Collect all hard cases (with tags applied)
+# =============================================================================
+
+HARD_CASES: list[BenchmarkCase] = apply_tags_to_hard_cases()
 
 
 def get_hard_cases() -> list[BenchmarkCase]:

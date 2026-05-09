@@ -8,12 +8,15 @@
 
 Large Language Models are increasingly used to write, review, and audit trading strategies and financial research. But can they catch the subtle data leakage issues that invalidate backtests? We created a benchmark to find out.
 
-**Key Findings (v2 Benchmark):**
-- **GPT-4o achieves 95.7% validity accuracy** on our 69-case benchmark with specialized prompting
-- Adversarial cases (designed to be hard) achieve only **88.2% accuracy** - confirming genuine difficulty
-- Models are **overcautious** - all 3 failures are valid cases flagged as invalid
-- **WRDS-backed cases achieve 100%** accuracy - models have accurate real-world knowledge
-- **Prompt engineering matters** - finance auditor prompt significantly outperforms minimal prompts
+**Key Finding (V4 Benchmark):**
+> LLMs are excellent at catching obvious point-in-time violations, but they are **overly cautious** and struggle to distinguish truly invalid workflows from valid-but-suspicious ones. They also struggle to express uncertainty when the correct answer is ambiguous.
+
+**Results Summary:**
+- **GPT-4o achieves 79.2% overall accuracy** on our 125-case V4 benchmark
+- **Zero false valids** - the model never approves a truly invalid workflow
+- **29% false invalid rate** - valid workflows are frequently flagged incorrectly
+- **21% ambiguous accuracy** - the model rarely identifies genuinely ambiguous cases
+- **59% trap-valid accuracy** - sophisticated valid cases frequently trigger false alarms
 
 ---
 
@@ -34,227 +37,177 @@ These errors are easy to make and hard to catch. A backtest can look perfectly r
 
 ---
 
-## Our Approach: A Benchmark for Auditing
+## Benchmark Evolution: V1 → V4
 
-Rather than asking "Can LLMs answer finance questions?", we ask: **"Can LLMs audit financial workflows for validity?"**
+Our benchmark evolved over four iterations to create increasingly challenging tests:
 
-### Benchmark Design
+| Version | Cases | Description | Key Finding |
+|---------|-------|-------------|-------------|
+| V1 | 42 | Original seed cases | 97.6% accuracy - too easy |
+| V2 | 69 | +17 adversarial, +10 WRDS | 95.7% accuracy - harder |
+| V3 | 105 | +36 hard source-backed | 84.8% accuracy - challenging |
+| **V4** | **125** | +20 calibration-focused | **79.2% accuracy** - overcaution revealed |
 
-We created **69 realistic audit tasks** (v2 benchmark) across four modules:
+### V4 Benchmark Structure
 
 ```
-┌────────────────────────────────────────────────────────────────┐
-│                    Benchmark Structure (v2)                     │
-├────────────────────┬─────────────────┬─────────────────────────┤
-│ Ticker Time Machine│ Filing Clock    │ Accounting Availability │
-│ (22 cases)         │ (15 cases)      │ (14 cases)              │
-├────────────────────┴─────────────────┴─────────────────────────┤
-│              Survivorship & Delisting (18 cases)                │
-├─────────────────────────────────────────────────────────────────┤
-│  Case Types: 42 Original + 17 Adversarial + 10 WRDS-backed     │
-└────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                    V4 Benchmark Structure (125 cases)                │
+├─────────────────────┬──────────────────┬───────────────────────────┤
+│ Ticker Time Machine │ Filing Clock     │ Accounting Availability   │
+│ (45 cases)          │ (27 cases)       │ (21 cases)                │
+├─────────────────────┴──────────────────┴───────────────────────────┤
+│              Survivorship & Delisting (32 cases)                    │
+├─────────────────────────────────────────────────────────────────────┤
+│  Expected Validity:  Valid: 41  |  Invalid: 70  |  Ambiguous: 14   │
+├─────────────────────────────────────────────────────────────────────┤
+│  Special Tags:  trap_valid: 22  |  ambiguous: 14  |  multi: 8      │
+└─────────────────────────────────────────────────────────────────────┘
 ```
 
-**Case Types:**
-- **Original (42)**: Standard audit tasks across difficulty levels
-- **Adversarial (17)**: "Trap valid" cases, subtle invalids, multi-violation
-- **WRDS-backed (10)**: Real ticker changes and delistings from CRSP data
-
-Each case presents a workflow description and asks the model to:
-1. Determine if the workflow is **valid**, **invalid**, or **ambiguous**
-2. Identify specific **violation types**
-3. Propose **repairs** to fix the issues
-
-### Example Task
-
-> A researcher studies the Cambridge Analytica event on 2018-03-20 and queries daily returns using ticker META. Audit this workflow.
-
-**Expected Answer:**
-- Validity: Invalid
-- Violation: identifier_time_travel
-- Repair: Use the historical ticker FB, which was valid on 2018-03-20
+**V4 Calibration Cases:**
+- **8 Valid Trap Cases**: Look suspicious but are actually correct
+- **8 Ambiguous Cases**: Correct answer is "needs more information"  
+- **4 Hard Invalid Cases**: Subtle but real violations
 
 ---
 
-## Evaluation Framework
+## Case Families (13 Source-Backed Families)
 
-### Models Evaluated
+V3/V4 includes hard cases based on real-world finance traps:
 
-| Configuration | Model | Prompt Type |
-|---------------|-------|-------------|
-| GPT-4o (Auditor) | gpt-4o | Finance auditor instructions |
-| GPT-4o (Minimal) | gpt-4o | Minimal instructions |
-| Claude Sonnet | claude-sonnet-4-20250514 | Finance auditor instructions |
-
-### Metrics
-
-- **Validity Accuracy**: Did the model correctly classify valid vs. invalid?
-- **Violation Recall**: Of true violations, how many were detected?
-- **Violation Precision**: Of flagged violations, how many were real?
-- **Severity-Weighted Score**: Critical violations weighted more heavily
-- **Repair Quality**: Did the proposed fix address the core issue?
-
----
-
-## Results
-
-### Overall Performance (v2 Benchmark)
-
-| Configuration | Validity Acc | Violation Recall | Cases |
-|---------------|--------------|------------------|-------|
-| GPT-4o (Finance Auditor) | **95.7%** | 86.0% | 69 |
-| GPT-4o (Minimal) | 73.8%* | 52.3%* | 42* |
-
-*Minimal prompt tested on v1 benchmark (42 cases)
-
-The **22-point accuracy gap** between prompts demonstrates the importance of domain-specific instructions.
-
-### Performance by Module
-
-| Module | Accuracy | Cases |
-|--------|----------|-------|
-| Filing Clock | 100% | 15 |
-| Ticker Time Machine | 95.5% | 22 |
-| Survivorship/Delisting | 94.4% | 18 |
-| Accounting Availability | 92.9% | 14 |
-
-Key observations:
-- **Filing Clock**: Perfect accuracy - timestamps are unambiguous
-- **Ticker Time Machine**: Strong performance despite complex corporate actions
-- **Accounting Availability**: Lowest accuracy - fiscal calendar reasoning is challenging
-- **Survivorship Bias**: Good on obvious cases, challenged by subtle filtering
-
-### Performance by Difficulty
-
-| Difficulty | Easy | Medium | Hard |
-|------------|------|--------|------|
-| Accuracy   | 100% | 95.8% | 92.9% |
-| Cases      | 17   | 24     | 28    |
-
-Hard cases are genuinely harder, with a 7% error rate vs 0% for easy.
-
-### Performance by Case Type
-
-| Case Type | Accuracy | Purpose |
-|-----------|----------|---------|
-| Original | 97.6% | Standard benchmark tasks |
-| Adversarial | 88.2% | Designed to challenge |
-| WRDS-backed | 100% | Real financial data |
-
-Adversarial cases achieved their goal: **11.8% error rate** vs 2.4% on original.
+1. **Ticker Reassignment** (Sears S → Sprint S, 2005)
+2. **Security Reorganization** (Manville bankruptcy PERMNO split)
+3. **FB-to-META Timing** (June 9, 2022 intraday transition)
+4. **GOOG vs GOOGL** (Share class for governance studies)
+5. **IBM/Kyndryl Spinoff** (November 2021 distribution)
+6. **SEC Filing Clock** (5:30 PM acceptance, next-day dissemination)
+7. **S&P Index Announcement vs Effective** (5-day gap)
+8. **Erroneous Index Announcements** (Revoked changes)
+9. **Compustat Current vs PIT** (Snapshot methodology)
+10. **As-Filed vs Standardized** (XBRL extraction differences)
+11. **Adjusted Price Semantics** (Returns vs levels)
+12. **Delisting Return Treatment** (Shumway methodology)
+13. **Earnings Timing Windows** (Pre-market vs after-close)
 
 ---
 
-## Failure Analysis
+## V4 Results: The Overcaution Discovery
 
-All 3 failures on the v2 benchmark are **false invalids** (overcautious):
+### Overall Performance
 
-### Specific Failures
+| Configuration | Validity Accuracy | False Invalid Rate | Ambiguous Accuracy |
+|---------------|-------------------|--------------------|--------------------|
+| GPT-4o (Finance Auditor) | **79.2%** | 29.3% | 21.4% |
+| GPT-4o (Generic) | 0%* | N/A | N/A |
 
-1. **`acct_preliminary_vs_final`**
-   - Expected: Valid (using preliminary earnings is fine)
-   - Predicted: Invalid (flagged as restatement_leakage)
-   - Model incorrectly thinks preliminary data constitutes leakage
+*Generic prompt failed to produce parseable JSON responses
 
-2. **`trap_ticker_change_day_correct`**
-   - Expected: Valid (FB on June 9, 2022 morning is correct)
-   - Predicted: Invalid (identifier_time_travel)
-   - Model doesn't recognize same-day usage of old ticker is valid
+### The Key Insight: Asymmetric Errors
 
-3. **`trap_survivorship_includes_delisted`**
-   - Expected: Valid (share code filtering is standard)
-   - Predicted: Ambiguous
-   - Model overcautious about share code 10/11 filtering
+| Error Type | Count | Rate | Implication |
+|------------|-------|------|-------------|
+| False Valids (missed violations) | **0** | 0% | Model is safe |
+| False Invalids (overcautious) | 12 | 29.3% of valid cases | Model is cautious |
+| Ambiguous → Invalid | 10 | 71.4% of ambiguous | Model avoids uncertainty |
 
-### Failure Pattern
+**The model never approves a truly invalid workflow**, but it frequently flags valid workflows as problematic.
 
-The model errs **toward caution** - it flags valid workflows as suspicious rather than missing real violations. This is arguably a safer failure mode for compliance but reduces usability.
+### Performance by Case Tag
 
-### Confidence When Wrong
-
-| Prediction | Mean Confidence |
-|------------|-----------------|
-| Correct | 0.953 |
-| Incorrect | 0.900 |
-
-The model is slightly less confident on mistakes, but the gap is small. This suggests **confidence calibration could be improved**.
+| Tag | Accuracy | Cases | Notes |
+|-----|----------|-------|-------|
+| `multi_violation` | 100% | 8 | Easy to catch multiple issues |
+| `requires_identifier_reasoning` | 78.6% | 14 | Ticker/PERMNO logic |
+| `requires_corporate_action_reasoning` | 62.5% | 8 | Spinoffs, splits |
+| `requires_dataset_semantics` | 61.5% | 13 | CRSP/Compustat fields |
+| `trap_valid` | 59.1% | 22 | Valid but suspicious |
+| `requires_timestamp_reasoning` | 43.8% | 16 | Filing timing |
+| `ambiguous` | 21.4% | 14 | Uncertainty expression |
 
 ---
 
-## Implications
+## Failure Taxonomy
 
-### For Researchers Using LLMs
+### Primary Failure Mode: Overcaution
 
-1. **LLMs are capable auditors** - 95.7% accuracy is strong for a first pass
-2. **Prompt engineering is crucial** - 22-point gap between prompts
-3. **Expect overcaution** - Valid workflows may be flagged
-4. **Use as screening tool** - Human review still needed for flagged cases
+The model errs toward caution in predictable ways:
+
+1. **Dataset Semantics Blindness**: Doesn't understand that CRSP adjusted returns already incorporate spinoffs and dividends
+
+2. **Timestamp Overcaution**: Assumes timing problems when methodology is sound
+
+3. **Ambiguity Aversion**: Defaults to "invalid" rather than acknowledging uncertainty
+
+4. **Trigger-Happy on Keywords**: Flags "spinoff" or "ticker change" without analyzing whether it was handled correctly
+
+### Example Failures
+
+**Case: `hard_ibm_crsp_adjusted_return`**
+- Prompt: Researcher uses CRSP ret field for IBM in November 2021 (Kyndryl spinoff)
+- Expected: Valid (CRSP ret already incorporates spinoff adjustment)
+- Predicted: Invalid (identifier_time_travel)
+- **Lesson**: Model doesn't know CRSP handles corporate actions
+
+**Case: `cal_ambig_compustat_unknown_lag`**
+- Prompt: Compustat data used for June portfolio, lag methodology unspecified
+- Expected: Ambiguous (need more information)
+- Predicted: Invalid (accounting_availability_leakage)
+- **Lesson**: Model assumes worst case rather than expressing uncertainty
+
+See `outputs/results/failure_casebook.md` for detailed analysis of 10 instructive failures.
+
+---
+
+## Practical Implications
+
+### For Researchers Using LLMs as Auditors
+
+1. **Trust "valid" verdicts** - zero false valid rate means approval is reliable
+2. **Scrutinize "invalid" verdicts** - 29% are false alarms, review carefully
+3. **Treat "ambiguous" as "might be valid"** - model under-reports ambiguity
+4. **Provide detailed methodology** - unclear descriptions trigger false positives
+5. **Explain your adjustments explicitly** - "using CRSP adjusted returns" helps
 
 ### For LLM Developers
 
-1. **Edge cases are hard** - "Trap valid" cases reveal overcaution
-2. **Real data grounding works** - WRDS-backed cases are handled well
-3. **Structured output helps** - JSON forcing reduces parse failures to 0%
+1. **Calibration matters** - models should express uncertainty appropriately
+2. **Dataset semantics training needed** - CRSP/Compustat field meanings
+3. **"Safe" ≠ "Good"** - overcaution reduces practical utility
 
 ### For Finance Education
 
-1. **These errors matter** - Real research has been invalidated by these issues
-2. **LLMs can teach awareness** - They catch most violations and explain them
-3. **Point-in-time thinking is essential** - The benchmark is itself educational
+1. **LLMs catch obvious violations** - useful teaching tool
+2. **Edge cases reveal model limits** - trap valid cases are educational
+3. **Point-in-time thinking is essential** - benchmark demonstrates importance
 
 ---
 
-## Methodology Details
+## Visualizations
 
-### Benchmark Construction
+### Key Figures (in `outputs/figures/`)
 
-Cases were created through:
-1. **Manual curation** of historically documented errors
-2. **Template generation** from known error patterns
-3. **Expert validation** of ground truth
-
-All cases include:
-- Natural language prompt
-- Expected validity classification
-- Expected violation types
-- Suggested repairs
-- Ground truth notes
-
-### Scoring
-
-```python
-# Validity: Exact match
-validity_correct = (expected == predicted)
-
-# Violations: Set-based precision/recall
-precision = |expected ∩ predicted| / |predicted|
-recall = |expected ∩ predicted| / |expected|
-
-# Severity weighting
-weights = {
-    'filing_clock_leakage': 3,
-    'survivorship_bias': 3,
-    'identifier_time_travel': 2,
-    ...
-}
-```
+1. **v4_summary.png** - Comprehensive results overview
+2. **v4_calibration_breakdown.png** - Accuracy by validity type and tags
+3. **v4_difficulty_breakdown.png** - Easy/Medium/Hard performance
+4. **v4_module_accuracy.png** - Per-module breakdown
+5. **v4_confidence_calibration.png** - Confidence vs accuracy
+6. **v4_overcaution_analysis.png** - False invalid rate analysis
 
 ---
 
 ## Limitations
 
-1. **Benchmark size**: 69 cases covers main patterns but not exhaustively
-2. **Ground truth**: Some edge cases (trap valid) have debatable correct answers
-3. **Model versions**: Results may vary with model updates
-4. **Prompt sensitivity**: Different prompts yield significantly different results
-5. **Single model tested**: Only GPT-4o evaluated on v2 (Claude pending API access)
-6. **No real trading**: We test detection, not actual backtesting impact
+1. **Single model tested** - Only GPT-4o on V4 (Claude requires API access)
+2. **Prompt sensitivity** - Generic prompt completely fails to produce valid JSON
+3. **Ground truth ambiguity** - Some "trap valid" cases have debatable answers
+4. **Benchmark size** - 125 cases covers main patterns but not exhaustively
+5. **No fine-tuning** - Using base model capabilities only
+6. **English only** - All prompts and cases in English
 
 ---
 
 ## Reproducibility
-
-All code, data, and results are available at: [GitHub Repository]
 
 ### Quick Start
 
@@ -264,65 +217,67 @@ git clone https://github.com/your-org/backtest-lie-detector
 cd backtest-lie-detector
 pip install -e ".[all]"
 
-# Run evaluation (v2 benchmark)
-python -m backtest_lie_detector.evals.run_eval \
-    --benchmark data/benchmark/benchmark_v2.jsonl \
-    --model gpt-4o \
-    --config finance_auditor
+# Generate V4 benchmark
+python -m backtest_lie_detector.benchmark.build_cases v4
 
-# Launch demo
-streamlit run src/backtest_lie_detector/app/streamlit_app.py
+# Run V4 evaluation
+python run_v4_comparison.py
+
+# Generate figures
+python generate_v4_figures.py
 ```
 
 ### Benchmark Versions
 - `benchmark_v1.jsonl`: Original 42 cases
-- `benchmark_v2.jsonl`: Enhanced 69 cases with adversarial + WRDS-backed
+- `benchmark_v2.jsonl`: 69 cases (+adversarial, +WRDS)
+- `benchmark_v3.jsonl`: 105 cases (+hard source-backed)
+- `benchmark_v4.jsonl`: 125 cases (+calibration-focused)
+
+### Output Files
+- `outputs/results/scores_v4.csv` - Per-case results
+- `outputs/results/calibration_scores_v4.csv` - Calibration metrics
+- `outputs/results/failure_casebook.md` - Detailed failure analysis
+- `outputs/figures/v4_*.png` - Visualization plots
 
 ---
 
 ## Conclusion
 
-GPT-4o with specialized prompting achieves **95.7% accuracy** as a point-in-time auditor, making it a capable first-pass tool for catching data leakage in financial research. Key takeaways:
+**Main Finding:** LLMs are reliable at catching obvious point-in-time violations but suffer from significant overcaution when evaluating sophisticated, valid methodologies.
 
-1. **Prompt engineering matters** - 22-point accuracy gap between prompts
-2. **Models are overcautious** - they flag valid workflows more than they miss violations
-3. **Adversarial cases work** - designed hard cases successfully challenge the model
-4. **Real data grounding helps** - WRDS-backed cases achieve 100% accuracy
+**Practical Recommendation:** Use LLMs as a first-pass screening tool with the understanding that:
+- "Valid" verdicts can be trusted (0% false valid rate)
+- "Invalid" verdicts require human review (29% false alarm rate)
+- "Ambiguous" is under-reported (model defaults to invalid)
 
-For practitioners, this suggests LLMs can serve as an **effective screening tool** that reduces human review burden, though flagged cases still require expert verification. The model's bias toward caution is arguably preferable to missing real violations.
-
-Future work could explore:
-- Fine-tuning on financial audit tasks
-- Retrieval-augmented generation with CRSP/Compustat data
-- Multi-model ensemble approaches
-- Expanding the benchmark to 200+ cases
+The benchmark reveals that financial domain knowledge - specifically understanding dataset semantics (CRSP adjusted returns, Compustat fields) and corporate action handling - remains a gap in current LLMs.
 
 ---
 
 ## AI Usage Statement
 
-This project was developed with assistance from AI tools:
+This project was developed with AI assistance:
 
-- **Code generation**: Claude assisted with boilerplate code, schema definitions, and test templates
-- **Documentation**: AI helped draft docstrings and documentation
-- **Benchmark cases**: Some case templates were AI-generated, but all were human-reviewed
+- **Code generation**: Claude assisted with implementation
+- **Documentation**: AI helped draft docstrings and writeup
+- **Benchmark cases**: Templates AI-generated, all human-reviewed
 
 **Human contributions:**
 - Benchmark design and methodology
-- Ground truth validation
-- Results interpretation
-- Failure analysis
-
-All benchmark cases were manually reviewed for accuracy. The evaluation harness, scoring logic, and analysis code were human-designed with AI assistance for implementation.
+- Ground truth validation (all 125 cases)
+- Results interpretation and failure analysis
+- Case family research and source verification
 
 ---
 
 ## References
 
-1. Bali, Engle, and Murray (2016). "Empirical Asset Pricing: The Cross Section of Stock Returns"
-2. Harvey, Liu, and Zhu (2016). "...and the Cross-Section of Expected Returns"
-3. CRSP Database Documentation
-4. SEC EDGAR Filing Documentation
+1. Shumway, T. (1997). "The Delisting Bias in CRSP Data"
+2. Shumway, T. and Warther, V. (1999). "The Delisting Bias in CRSP's Nasdaq Data and Its Implications for the Size Effect"
+3. Fama, E. and French, K. (1992). "The Cross-Section of Expected Stock Returns"
+4. CRSP Database Documentation
+5. SEC EDGAR Filing Documentation
+6. Harvey, Liu, and Zhu (2016). "...and the Cross-Section of Expected Returns"
 
 ---
 

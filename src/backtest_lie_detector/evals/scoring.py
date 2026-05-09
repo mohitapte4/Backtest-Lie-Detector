@@ -515,3 +515,300 @@ def scores_to_dataframe(scores: list[ScoredResponse]) -> pd.DataFrame:
         rows.append(row)
     
     return pd.DataFrame(rows)
+
+
+# =============================================================================
+# V4 CALIBRATION METRICS
+# =============================================================================
+
+# Enhanced repair keywords for v2 scoring
+REPAIR_KEYWORDS_V2: dict[ViolationType, list[str]] = {
+    ViolationType.IDENTIFIER_TIME_TRAVEL: [
+        "historical ticker", "permno", "point-in-time", "as-of date",
+        "valid on", "cusip", "historical identifier", "fb", "goog",
+        "use the ticker that was valid"
+    ],
+    ViolationType.ISSUER_SECURITY_CONFUSION: [
+        "share class", "permno", "security", "issuer", "class a",
+        "class b", "class c", "adr", "different securities"
+    ],
+    ViolationType.FILING_CLOCK_LEAKAGE: [
+        "acceptance time", "dissemination", "next session", "before release",
+        "filing time", "edgar", "after filing", "publicly available"
+    ],
+    ViolationType.ACCOUNTING_AVAILABILITY_LEAKAGE: [
+        "report date", "filing date", "lag", "available before",
+        "10-k", "10-q", "rdq", "fiscal year end", "months after"
+    ],
+    ViolationType.RESTATEMENT_LEAKAGE: [
+        "point-in-time", "snapshot", "as-reported", "restated",
+        "original filing", "compustat unrestated"
+    ],
+    ViolationType.SURVIVORSHIP_BIAS: [
+        "point-in-time universe", "include delisted", "historical constituents",
+        "existed at the time", "survivor", "avoid current"
+    ],
+    ViolationType.DELISTING_RETURN_OMISSION: [
+        "dlret", "delisting return", "total return", "missing delisting",
+        "crsp", "shumway", "impute", "-30%"
+    ],
+    ViolationType.WRONG_EVENT_WINDOW: [
+        "event window", "pre-market", "after-close", "announcement time",
+        "timing", "t+1", "correct window"
+    ],
+    ViolationType.TIMEZONE_ERROR: [
+        "timezone", "eastern", "utc", "pacific", "et", "local time"
+    ],
+}
+
+
+def compute_calibration_metrics(
+    scores: list[ScoredResponse],
+    cases: list[BenchmarkCase]
+) -> dict:
+    """
+    Compute calibration-focused metrics for V4 evaluation.
+    
+    These metrics assess model calibration, overcaution, and uncertainty handling.
+    
+    Args:
+        scores: List of scored responses.
+        cases: List of benchmark cases with tags.
+    
+    Returns:
+        Dictionary with calibration metrics:
+        - false_invalid_rate: fraction of valid cases predicted invalid
+        - false_valid_rate: fraction of invalid cases predicted valid
+        - ambiguous_accuracy: accuracy on ambiguous cases
+        - valid_trap_accuracy: accuracy on trap_valid tagged cases
+        - overcaution_score: combined measure of overcautious behavior
+        - uncertainty_score: ability to express uncertainty appropriately
+    """
+    case_map = {c.id: c for c in cases}
+    parsed = [s for s in scores if s.parse_success and s.parsed_response]
+    
+    if not parsed:
+        return {}
+    
+    # Categorize by expected validity
+    valid_cases = []
+    invalid_cases = []
+    ambiguous_cases = []
+    trap_valid_cases = []
+    
+    for score in parsed:
+        if score.case_id not in case_map:
+            continue
+        case = case_map[score.case_id]
+        
+        if case.expected_validity == Validity.VALID:
+            valid_cases.append(score)
+        elif case.expected_validity == Validity.INVALID:
+            invalid_cases.append(score)
+        elif case.expected_validity == Validity.AMBIGUOUS:
+            ambiguous_cases.append(score)
+        
+        # Check for trap_valid tag
+        if hasattr(case, 'case_tags') and 'trap_valid' in case.case_tags:
+            trap_valid_cases.append(score)
+    
+    # False invalid rate: among valid cases, fraction predicted invalid
+    false_invalids = sum(
+        1 for s in valid_cases 
+        if s.parsed_response.validity == Validity.INVALID
+    )
+    false_invalid_rate = false_invalids / len(valid_cases) if valid_cases else 0.0
+    
+    # False valid rate: among invalid cases, fraction predicted valid
+    false_valids = sum(
+        1 for s in invalid_cases
+        if s.parsed_response.validity == Validity.VALID
+    )
+    false_valid_rate = false_valids / len(invalid_cases) if invalid_cases else 0.0
+    
+    # Ambiguous accuracy: among ambiguous cases, fraction predicted ambiguous
+    ambiguous_correct = sum(
+        1 for s in ambiguous_cases
+        if s.parsed_response.validity == Validity.AMBIGUOUS
+    )
+    ambiguous_accuracy = ambiguous_correct / len(ambiguous_cases) if ambiguous_cases else 0.0
+    
+    # Among ambiguous cases, how many were predicted invalid (overcautious)
+    ambiguous_to_invalid = sum(
+        1 for s in ambiguous_cases
+        if s.parsed_response.validity == Validity.INVALID
+    )
+    ambiguous_invalid_rate = ambiguous_to_invalid / len(ambiguous_cases) if ambiguous_cases else 0.0
+    
+    # Valid trap accuracy: among trap_valid tagged, fraction predicted valid
+    trap_correct = sum(1 for s in trap_valid_cases if s.validity_correct)
+    valid_trap_accuracy = trap_correct / len(trap_valid_cases) if trap_valid_cases else 0.0
+    
+    # Overcaution score: combined false_invalid + ambiguous->invalid behavior
+    # Higher = more overcautious
+    overcaution_score = (false_invalid_rate + ambiguous_invalid_rate) / 2
+    
+    # Uncertainty score: ability to choose ambiguous when appropriate
+    # Also penalize for predicting ambiguous when not appropriate
+    false_ambiguous = sum(
+        1 for s in valid_cases + invalid_cases
+        if s.parsed_response.validity == Validity.AMBIGUOUS
+    )
+    false_ambiguous_rate = false_ambiguous / (len(valid_cases) + len(invalid_cases)) if (valid_cases or invalid_cases) else 0.0
+    
+    # Good uncertainty: high ambiguous_accuracy, low false_ambiguous_rate
+    uncertainty_score = ambiguous_accuracy * (1 - false_ambiguous_rate)
+    
+    return {
+        "false_invalid_rate": false_invalid_rate,
+        "false_valid_rate": false_valid_rate,
+        "ambiguous_accuracy": ambiguous_accuracy,
+        "ambiguous_invalid_rate": ambiguous_invalid_rate,
+        "valid_trap_accuracy": valid_trap_accuracy,
+        "overcaution_score": overcaution_score,
+        "uncertainty_score": uncertainty_score,
+        "n_valid_cases": len(valid_cases),
+        "n_invalid_cases": len(invalid_cases),
+        "n_ambiguous_cases": len(ambiguous_cases),
+        "n_trap_valid_cases": len(trap_valid_cases),
+        "n_false_invalids": false_invalids,
+        "n_false_valids": false_valids,
+    }
+
+
+def score_repair_v2(
+    predicted_repair: list[str],
+    expected_violations: list[ViolationType],
+    expected_repair: list[str]
+) -> float:
+    """
+    Enhanced repair scoring with violation-specific keywords (V2).
+    
+    Scores based on coverage of required repair concepts for each violation type.
+    
+    Args:
+        predicted_repair: Model's proposed repair steps.
+        expected_violations: Violations that need fixing.
+        expected_repair: Ground truth repair steps.
+    
+    Returns:
+        Repair score (0.0-1.0).
+    """
+    if not expected_violations:
+        return 1.0 if not predicted_repair else 0.5
+    
+    if not predicted_repair:
+        return 0.0
+    
+    repair_text = " ".join(predicted_repair).lower()
+    expected_text = " ".join(expected_repair).lower()
+    
+    scores = []
+    
+    for violation in expected_violations:
+        keywords = REPAIR_KEYWORDS_V2.get(violation, [])
+        if not keywords:
+            scores.append(0.5)
+            continue
+        
+        # Count keyword matches
+        matches = sum(1 for kw in keywords if kw.lower() in repair_text)
+        
+        # Require at least 2 keyword matches for full credit
+        min_required = min(2, len(keywords))
+        keyword_score = min(1.0, matches / min_required)
+        scores.append(keyword_score)
+    
+    # Overlap with expected repair text
+    if expected_text:
+        expected_words = set(w for w in expected_text.split() if len(w) > 3)
+        repair_words = set(w for w in repair_text.split() if len(w) > 3)
+        
+        if expected_words:
+            overlap = len(expected_words & repair_words) / len(expected_words)
+            scores.append(min(1.0, overlap * 1.5))
+    
+    return sum(scores) / len(scores) if scores else 0.0
+
+
+def compute_calibration_by_module(
+    scores: list[ScoredResponse],
+    cases: list[BenchmarkCase]
+) -> dict[str, dict]:
+    """
+    Compute calibration metrics broken down by module.
+    
+    Args:
+        scores: List of scored responses.
+        cases: List of benchmark cases.
+    
+    Returns:
+        Dictionary mapping module name to calibration metrics.
+    """
+    case_map = {c.id: c for c in cases}
+    
+    module_scores: dict[Module, list[ScoredResponse]] = {m: [] for m in Module}
+    module_cases: dict[Module, list[BenchmarkCase]] = {m: [] for m in Module}
+    
+    for score in scores:
+        if score.case_id in case_map:
+            case = case_map[score.case_id]
+            module_scores[case.module].append(score)
+            if case not in module_cases[case.module]:
+                module_cases[case.module].append(case)
+    
+    return {
+        module.value: compute_calibration_metrics(
+            module_scores[module],
+            module_cases[module]
+        )
+        for module in Module
+        if module_scores[module]
+    }
+
+
+def compute_calibration_by_tag(
+    scores: list[ScoredResponse],
+    cases: list[BenchmarkCase]
+) -> dict[str, dict]:
+    """
+    Compute accuracy metrics broken down by case tag.
+    
+    Args:
+        scores: List of scored responses.
+        cases: List of benchmark cases.
+    
+    Returns:
+        Dictionary mapping tag to accuracy statistics.
+    """
+    case_map = {c.id: c for c in cases}
+    parsed = [s for s in scores if s.parse_success]
+    
+    # Collect all tags
+    all_tags = set()
+    for case in cases:
+        if hasattr(case, 'case_tags'):
+            all_tags.update(case.case_tags)
+    
+    tag_stats = {}
+    
+    for tag in all_tags:
+        tag_scores = []
+        for score in parsed:
+            if score.case_id not in case_map:
+                continue
+            case = case_map[score.case_id]
+            if hasattr(case, 'case_tags') and tag in case.case_tags:
+                tag_scores.append(score)
+        
+        if not tag_scores:
+            continue
+        
+        correct = sum(1 for s in tag_scores if s.validity_correct)
+        tag_stats[tag] = {
+            "total": len(tag_scores),
+            "correct": correct,
+            "accuracy": correct / len(tag_scores),
+        }
+    
+    return tag_stats
