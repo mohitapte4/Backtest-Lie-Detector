@@ -81,4 +81,5 @@ IEEE-conference-template-062824.tex
 *.lof
 *.lot
 *.pdf
+*.zip
 figures/*.drawio
