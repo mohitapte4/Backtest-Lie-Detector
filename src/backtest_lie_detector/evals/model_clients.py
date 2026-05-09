@@ -108,12 +108,12 @@ class OpenAIClient(BaseModelClient):
 class AnthropicClient(BaseModelClient):
     """Client wrapper for Anthropic API."""
     
-    def __init__(self, model: str = "claude-sonnet-4-20250514"):
+    def __init__(self, model: str = "claude-sonnet-4-5"):
         """
         Initialize the Anthropic client.
         
         Args:
-            model: Model identifier (e.g., "claude-sonnet-4-20250514", "claude-3-opus-20240229").
+            model: Model identifier (e.g., "claude-sonnet-4-5", "claude-opus-4-5").
         """
         try:
             import anthropic

@@ -9,19 +9,26 @@
 
 This project provides a benchmark and evaluation framework to test whether Large Language Models (LLMs) can reliably detect point-in-time validity errors in financial research workflows. These errors—including look-ahead bias, ticker time-travel, filing timing mistakes, and survivorship bias—can silently invalidate backtests, event studies, and quantitative research.
 
-### Key Finding (V4 Benchmark)
+### Key Findings (V4 Benchmark)
 
-> LLMs are excellent at catching obvious violations (**0% false valid rate**) but are **overly cautious** (**29% false invalid rate**) and struggle to express uncertainty (**21% ambiguous accuracy**).
+> 1. LLMs catch violations reliably (**~1% false valid rate**)
+> 2. Overcaution is the main failure mode (**22-44% false invalid rate**)
+> 3. Simpler prompts outperform specialized domain prompts
+> 4. Accuracy and repair quality are inversely correlated
 
 ### Results Summary
 
-| Metric | Value | Interpretation |
-|--------|-------|----------------|
-| Overall Accuracy | 79.2% | Good but not production-ready |
-| False Valid Rate | 0% | Never misses true violations |
-| False Invalid Rate | 29.3% | Frequently flags valid workflows |
-| Ambiguous Accuracy | 21.4% | Poor at expressing uncertainty |
-| Trap Valid Accuracy | 59.1% | Struggles with sophisticated valid cases |
+| Model | Accuracy | False Invalid | False Valid | Repair Quality |
+|-------|----------|---------------|-------------|----------------|
+| GPT-4o (Generic) | **83.2%** | **22.0%** | 1.4% | 36.7% |
+| GPT-4o (Specialized) | 79.2% | 36.6% | 1.4% | 40.0% |
+| Claude Sonnet 4.5 | 75.2% | 43.9% | 1.4% | **66.7%** |
+
+| Baseline | Accuracy | False Valid |
+|----------|----------|-------------|
+| Always Invalid | 56.0% | 0.0% |
+| Rule-Based | 38.4% | 81.4% |
+| Always Valid | 32.8% | 100.0% |
 
 ## Benchmark Versions
 
@@ -154,8 +161,12 @@ backtest-lie-detector/
 │   ├── 01_build_benchmark.ipynb
 │   ├── 02_run_evals.ipynb
 │   └── 03_analyze_results.ipynb
-├── run_v4_comparison.py           # V4 evaluation script
-├── generate_v4_figures.py         # V4 figure generation
+├── run_v4_comparison.py           # GPT-4o V4 evaluation script
+├── run_claude_evaluation.py       # Claude Sonnet evaluation
+├── run_baseline_evaluation.py     # Rule-based baselines
+├── generate_final_figures.py      # Multi-model figure generation
+├── scripts/
+│   └── analyze_repairs.py         # Repair quality analysis
 └── tests/
 ```
 
@@ -221,10 +232,10 @@ python generate_v4_figures.py
 
 ## Limitations
 
-1. **Single model tested on V4**: Only GPT-4o evaluated (Claude requires API access)
-2. **Prompt sensitivity**: Generic prompt fails to produce valid JSON
+1. **Two models tested**: GPT-4o and Claude Sonnet; more models would strengthen conclusions
+2. **Two prompt variants**: More prompt engineering could yield better results
 3. **Benchmark size**: 125 cases covers main patterns but not exhaustively
-4. **Ground truth ambiguity**: Some trap_valid cases have debatable answers
+4. **Ground truth requires expertise**: Some trap_valid cases have debatable answers
 5. **No fine-tuning**: Using base model capabilities only
 6. **English only**: All prompts and cases in English
 

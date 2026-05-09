@@ -76,32 +76,91 @@ Our benchmark evolved over four iterations to create increasingly challenging te
 
 ## Case Families (13 Source-Backed Families)
 
-V3/V4 includes hard cases based on real-world finance traps:
+V3/V4 includes hard cases based on real-world finance traps. Each family is tied to authoritative documentation:
 
-1. **Ticker Reassignment** (Sears S → Sprint S, 2005)
-2. **Security Reorganization** (Manville bankruptcy PERMNO split)
-3. **FB-to-META Timing** (June 9, 2022 intraday transition)
-4. **GOOG vs GOOGL** (Share class for governance studies)
-5. **IBM/Kyndryl Spinoff** (November 2021 distribution)
-6. **SEC Filing Clock** (5:30 PM acceptance, next-day dissemination)
-7. **S&P Index Announcement vs Effective** (5-day gap)
-8. **Erroneous Index Announcements** (Revoked changes)
-9. **Compustat Current vs PIT** (Snapshot methodology)
-10. **As-Filed vs Standardized** (XBRL extraction differences)
-11. **Adjusted Price Semantics** (Returns vs levels)
-12. **Delisting Return Treatment** (Shumway methodology)
-13. **Earnings Timing Windows** (Pre-market vs after-close)
+| # | Family | Example | Source |
+|---|--------|---------|--------|
+| 1 | **Ticker Reassignment** | Sears S → Sprint S, 2005 | CRSP Stock Header documentation |
+| 2 | **Security Reorganization** | Manville bankruptcy PERMNO split | CRSP Event documentation |
+| 3 | **FB-to-META Timing** | June 9, 2022 intraday transition | Meta SEC 8-K filing (June 2022) |
+| 4 | **GOOG vs GOOGL** | Share class for governance studies | Alphabet Proxy Statement (2014) |
+| 5 | **IBM/Kyndryl Spinoff** | November 2021 distribution | IBM SEC Form 10 filing |
+| 6 | **SEC Filing Clock** | 5:30 PM acceptance rules | SEC EDGAR Filer Manual |
+| 7 | **S&P Index Timing** | Announcement vs effective date | S&P Index Methodology Guide |
+| 8 | **Erroneous Announcements** | Revoked index changes | Historical S&P press releases |
+| 9 | **Compustat Current vs PIT** | Snapshot methodology | WRDS Compustat documentation |
+| 10 | **As-Filed vs Standardized** | XBRL extraction differences | Compustat User Guide |
+| 11 | **Adjusted Price Semantics** | Returns vs levels | CRSP Data Definitions Manual |
+| 12 | **Delisting Returns** | Conservative imputation | Shumway (1997), Shumway & Warther (1999) |
+| 13 | **Earnings Timing** | Pre-market vs after-close | I/B/E/S Timing Flag documentation |
 
 ---
 
-## V4 Results: The Prompt Engineering Paradox
+## Ground Truth Labeling Protocol
 
-### Overall Performance
+### Validity Labels
 
-| Configuration | Validity Accuracy | False Invalid Rate | Ambiguous Accuracy |
-|---------------|-------------------|--------------------|--------------------|
-| GPT-4o (Specialized Finance Auditor) | 79.2% | 36.6% | 28.6% |
-| GPT-4o (Generic Minimal Prompt) | **83.2%** | **22.0%** | 21.4% |
+Each benchmark case is labeled with one of three validity values:
+
+| Label | Definition | Criteria |
+|-------|------------|----------|
+| **Valid** | Workflow is point-in-time correct | All data used was publicly available at decision time; identifiers correctly match the historical period |
+| **Invalid** | Clear violation identifiable from prompt | At least one unambiguous point-in-time error is present |
+| **Ambiguous** | Missing critical information | Cannot determine validity without additional context |
+
+### When is "Ambiguous" Correct?
+
+A case is labeled ambiguous **only** when the prompt lacks information required to determine point-in-time validity. The five categories that trigger ambiguous labels:
+
+1. **Missing filing acceptance timestamp** - The filing date is given but not the exact acceptance time needed to determine same-day availability
+2. **Unspecified accounting lag methodology** - Uses Compustat data but doesn't specify whether point-in-time snapshots or standard lag was applied
+3. **Missing share-class purpose specification** - Uses GOOG vs GOOGL without clarifying if share class matters for the research question
+4. **Missing event decision timestamp** - Trading decision time unclear relative to information release
+5. **Unspecified data source version** - Doesn't clarify if using current download or historical snapshot
+
+### Examples from Benchmark
+
+| Case ID | Label | Why This Label |
+|---------|-------|----------------|
+| `cal_ambig_filing_no_timestamp` | Ambiguous | "Filed on March 15" - no acceptance time given |
+| `cal_ambig_compustat_unknown_lag` | Ambiguous | Uses Compustat for June portfolio - lag method unspecified |
+| `cal_valid_crsp_adjusted_return` | Valid | CRSP `ret` field correctly handles spinoff adjustments |
+| `hard_meta_june9_intraday` | Invalid | Uses META at 10 AM on June 9, 2022 - ticker changed at market open |
+
+---
+
+## V4 Results: Multi-Model Comparison
+
+### Model Leaderboard
+
+| Configuration | Accuracy | False Invalid | False Valid | Ambiguous Acc |
+|---------------|----------|---------------|-------------|---------------|
+| GPT-4o (Generic) | **83.2%** | **22.0%** | 1.4% | 21.4% |
+| GPT-4o (Specialized) | 79.2% | 36.6% | 1.4% | 28.6% |
+| Claude Sonnet 4.5 | 75.2% | 43.9% | 1.4% | 14.3% |
+
+### Baseline Comparison
+
+| Baseline | Accuracy | False Invalid | False Valid |
+|----------|----------|---------------|-------------|
+| Always Invalid | 56.0% | 100.0% | 0.0% |
+| Keyword Suspicion | 40.8% | 4.9% | 82.9% |
+| Rule-Based | 38.4% | 14.6% | 81.4% |
+| Always Valid | 32.8% | 0.0% | 100.0% |
+
+**Key insight:** LLMs dramatically outperform rule-based approaches on violation detection (1.4% false valid vs 81-100%), while baselines help contextualize that LLM overcaution (22-44% false invalid) is still far better than naive "always invalid" (100%).
+
+### Repair Quality Analysis
+
+Beyond classification, we evaluated whether models propose *useful* repairs (30 cases sampled per model):
+
+| Model | Correct | Partial | Wrong/Vague |
+|-------|---------|---------|-------------|
+| Claude Sonnet | **66.7%** | 30.0% | 3.3% |
+| GPT-4o (Specialized) | 40.0% | 36.7% | 23.3% |
+| GPT-4o (Generic) | 36.7% | 26.7% | 36.7% |
+
+**Surprising finding:** Claude Sonnet produces significantly better repair suggestions despite lower classification accuracy. This suggests Claude's overcaution may stem from *deeper understanding* of potential issues, even when the workflow is actually valid.
 
 ### The Surprising Finding: Simpler Is Better
 
@@ -192,20 +251,20 @@ See `outputs/results/failure_casebook.md` for detailed analysis of 10 instructiv
 
 ### Key Figures (in `outputs/figures/`)
 
-1. **v4_summary.png** - Comprehensive results overview
-2. **v4_calibration_breakdown.png** - Accuracy by validity type and tags
-3. **v4_difficulty_breakdown.png** - Easy/Medium/Hard performance
-4. **v4_module_accuracy.png** - Per-module breakdown
-5. **v4_confidence_calibration.png** - Confidence vs accuracy
-6. **v4_overcaution_analysis.png** - False invalid rate analysis
+1. **v4_multimodel_comparison.png** - 3-model accuracy and metrics comparison
+2. **v4_llm_vs_baselines.png** - LLMs vs rule-based baselines
+3. **v4_tradeoff_scatter.png** - Safety vs utility trade-off visualization
+4. **v4_prompt_comparison.png** - Generic vs specialized prompt analysis
+5. **v4_calibration_breakdown.png** - Accuracy by validity type and tags
+6. **v4_difficulty_breakdown.png** - Easy/Medium/Hard performance
 
 ---
 
 ## Limitations
 
-1. **Single model tested** - Only GPT-4o on V4 (Claude requires API access)
+1. **Two models tested** - GPT-4o and Claude Sonnet; more models would strengthen conclusions
 2. **Two prompt variants** - More prompt engineering could yield better results
-3. **Ground truth ambiguity** - Some "trap valid" cases have debatable answers
+3. **Ground truth requires domain expertise** - Some trap valid cases have debatable answers (see protocol above)
 4. **Benchmark size** - 125 cases covers main patterns but not exhaustively
 5. **No fine-tuning** - Using base model capabilities only
 6. **English only** - All prompts and cases in English
@@ -250,16 +309,18 @@ python generate_v4_figures.py
 
 **Main Findings:** 
 1. LLMs are reliable at catching obvious point-in-time violations (~99% catch rate)
-2. Overcaution is the primary failure mode (22-37% false invalid rate)
+2. Overcaution is the primary failure mode (22-44% false invalid rate)
 3. **Simpler prompts perform better** than detailed domain expert prompts
+4. **Accuracy and repair quality are inversely correlated** - Claude has lowest accuracy but best repairs
 
 **Practical Recommendation:** Use LLMs as a first-pass screening tool with the understanding that:
-- "Valid" verdicts can be trusted (~1% false valid rate)
-- "Invalid" verdicts require human review (22-37% false alarm rate depending on prompt)
-- Consider using minimal prompts to reduce overcaution
-- "Ambiguous" is under-reported (model defaults to invalid)
+- "Valid" verdicts can be trusted (~1% false valid rate across all models)
+- "Invalid" verdicts require human review (22-44% false alarm rate)
+- Consider GPT-4o with generic prompts for best accuracy-caution tradeoff
+- Consider Claude Sonnet when repair suggestions are important
+- "Ambiguous" is under-reported (models default to invalid)
 
-The benchmark reveals that financial domain knowledge - specifically understanding dataset semantics (CRSP adjusted returns, Compustat fields) and corporate action handling - remains a gap in current LLMs. However, adding this knowledge to the prompt may paradoxically make the model *more* cautious rather than more accurate.
+**Compared to Baselines:** LLMs dramatically outperform rule-based approaches (1.4% vs 81% false valid rate), demonstrating genuine understanding beyond keyword matching. However, even "always invalid" achieves 56% accuracy, contextualizing that the benchmark has a strong invalid case prevalence.
 
 ---
 
