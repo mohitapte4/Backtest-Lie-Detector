@@ -1,0 +1,165 @@
+﻿======================================================================
+V6 CHRONOLOGY CASES EVALUATION
+Testing Pure Temporal Reasoning (Anachronism Detection)
+Started at: 2026-05-14 20:33:54
+======================================================================
+
+Loaded 15 chronology cases
+  - Valid cases: 6
+  - Invalid cases: 9
+
+==================================================
+Model 1: GPT-4o (Generic Prompt)
+==================================================
+  [1/15] chrono_filing_before_trade_valid...
+    [OK] Expected: valid, Predicted: valid
+  [2/15] chrono_trade_before_filing_invalid...
+    [OK] Expected: invalid, Predicted: invalid
+  [3/15] chrono_intraday_15min_before...
+    [OK] Expected: invalid, Predicted: invalid
+  [4/15] chrono_intraday_5min_after_valid...
+    [OK] Expected: valid, Predicted: valid
+  [5/15] chrono_ticker_before_existence...
+    [OK] Expected: invalid, Predicted: invalid
+  [6/15] chrono_cross_midnight_invalid...
+    [OK] Expected: invalid, Predicted: invalid
+  [7/15] chrono_year_boundary_invalid...
+    [OK] Expected: invalid, Predicted: invalid
+  [8/15] chrono_same_minute_valid...
+    [WRONG] Expected: valid, Predicted: invalid
+  [9/15] chrono_misleading_after_invalid...
+    [OK] Expected: invalid, Predicted: invalid
+  [10/15] chrono_misleading_before_valid...
+    [OK] Expected: valid, Predicted: valid
+  [11/15] chrono_wrong_year_invalid...
+    [OK] Expected: invalid, Predicted: invalid
+  [12/15] chrono_large_gap_valid...
+    [WRONG] Expected: valid, Predicted: invalid
+  [13/15] chrono_latest_is_old_valid...
+    [WRONG] Expected: valid, Predicted: invalid
+  [14/15] chrono_timezone_trick_invalid...
+    [OK] Expected: invalid, Predicted: invalid
+  [15/15] chrono_confident_wrong_invalid...
+    [OK] Expected: invalid, Predicted: invalid
+
+==================================================
+Model 2: GPT-4o (Specialized Prompt)
+==================================================
+  [1/15] chrono_filing_before_trade_valid...
+    [OK] Expected: valid, Predicted: valid
+  [2/15] chrono_trade_before_filing_invalid...
+    [OK] Expected: invalid, Predicted: invalid
+  [3/15] chrono_intraday_15min_before...
+    [OK] Expected: invalid, Predicted: invalid
+  [4/15] chrono_intraday_5min_after_valid...
+    [OK] Expected: valid, Predicted: valid
+  [5/15] chrono_ticker_before_existence...
+    [OK] Expected: invalid, Predicted: invalid
+  [6/15] chrono_cross_midnight_invalid...
+    [OK] Expected: invalid, Predicted: invalid
+  [7/15] chrono_year_boundary_invalid...
+    [OK] Expected: invalid, Predicted: invalid
+  [8/15] chrono_same_minute_valid...
+    [WRONG] Expected: valid, Predicted: invalid
+  [9/15] chrono_misleading_after_invalid...
+    [OK] Expected: invalid, Predicted: invalid
+  [10/15] chrono_misleading_before_valid...
+    [WRONG] Expected: valid, Predicted: ambiguous
+  [11/15] chrono_wrong_year_invalid...
+    [OK] Expected: invalid, Predicted: invalid
+  [12/15] chrono_large_gap_valid...
+    [WRONG] Expected: valid, Predicted: invalid
+  [13/15] chrono_latest_is_old_valid...
+    [WRONG] Expected: valid, Predicted: invalid
+  [14/15] chrono_timezone_trick_invalid...
+    [OK] Expected: invalid, Predicted: invalid
+  [15/15] chrono_confident_wrong_invalid...
+    [OK] Expected: invalid, Predicted: invalid
+
+==================================================
+Model 3: Claude Sonnet (Generic Prompt)
+==================================================
+  [1/15] chrono_filing_before_trade_valid...
+    [OK] Expected: valid, Predicted: valid
+  [2/15] chrono_trade_before_filing_invalid...
+    [OK] Expected: invalid, Predicted: invalid
+  [3/15] chrono_intraday_15min_before...
+    [OK] Expected: invalid, Predicted: invalid
+  [4/15] chrono_intraday_5min_after_valid...
+    [WRONG] Expected: valid, Predicted: invalid
+  [5/15] chrono_ticker_before_existence...
+    [OK] Expected: invalid, Predicted: invalid
+  [6/15] chrono_cross_midnight_invalid...
+    [OK] Expected: invalid, Predicted: invalid
+  [7/15] chrono_year_boundary_invalid...
+    [OK] Expected: invalid, Predicted: invalid
+  [8/15] chrono_same_minute_valid...
+    [WRONG] Expected: valid, Predicted: invalid
+  [9/15] chrono_misleading_after_invalid...
+    [OK] Expected: invalid, Predicted: invalid
+  [10/15] chrono_misleading_before_valid...
+    [OK] Expected: valid, Predicted: valid
+  [11/15] chrono_wrong_year_invalid...
+    [OK] Expected: invalid, Predicted: invalid
+  [12/15] chrono_large_gap_valid...
+    [WRONG] Expected: valid, Predicted: invalid
+  [13/15] chrono_latest_is_old_valid...
+    [OK] Expected: valid, Predicted: valid
+  [14/15] chrono_timezone_trick_invalid...
+    [OK] Expected: invalid, Predicted: invalid
+  [15/15] chrono_confident_wrong_invalid...
+    [OK] Expected: invalid, Predicted: invalid
+
+==========================================================================================
+DETAILED RESULTS BY CASE
+==========================================================================================
+
+Case ID                                  Expected   GPT-Gen    GPT-Spec   Claude    
+------------------------------------------------------------------------------------------
+chrono_filing_before_trade_valid         valid      val(OK)    val(OK)    val(OK)   
+chrono_trade_before_filing_invalid       invalid    inv(OK)    inv(OK)    inv(OK)   
+chrono_intraday_15min_before             invalid    inv(OK)    inv(OK)    inv(OK)   
+chrono_intraday_5min_after_valid         valid      val(OK)    val(OK)    inv(X)    
+chrono_ticker_before_existence           invalid    inv(OK)    inv(OK)    inv(OK)   
+chrono_cross_midnight_invalid            invalid    inv(OK)    inv(OK)    inv(OK)   
+chrono_year_boundary_invalid             invalid    inv(OK)    inv(OK)    inv(OK)   
+chrono_same_minute_valid                 valid      inv(X)     inv(X)     inv(X)    
+chrono_misleading_after_invalid          invalid    inv(OK)    inv(OK)    inv(OK)   
+chrono_misleading_before_valid           valid      val(OK)    amb(X)     val(OK)   
+chrono_wrong_year_invalid                invalid    inv(OK)    inv(OK)    inv(OK)   
+chrono_large_gap_valid                   valid      inv(X)     inv(X)     inv(X)    
+chrono_latest_is_old_valid               valid      inv(X)     inv(X)     val(OK)   
+chrono_timezone_trick_invalid            invalid    inv(OK)    inv(OK)    inv(OK)   
+chrono_confident_wrong_invalid           invalid    inv(OK)    inv(OK)    inv(OK)   
+
+======================================================================
+CHRONOLOGY CASES SUMMARY (8 cases)
+======================================================================
+
+Model                            Accuracy    Valid Acc  Invalid Acc
+----------------------------------------------------------------------
+gpt-4o-generic                      80.0%        50.0%       100.0%
+gpt-4o-specialized                  73.3%        33.3%       100.0%
+claude-sonnet                       80.0%        50.0%       100.0%
+
+======================================================================
+KEY FINDING: Pure Temporal Reasoning
+======================================================================
+
+These cases test whether LLMs can detect anachronisms - events that are
+out of chronological order. Unlike other benchmark cases that require
+knowledge of CRSP semantics or corporate actions, these are pure
+"did event A happen before event B?" puzzles.
+
+High accuracy here suggests good temporal reasoning capability.
+Low accuracy (especially on invalid cases) suggests the model
+may miss anachronisms even when dates/times are explicit.
+
+
+Completed at: 2026-05-14 20:37:47
+======================================================================
+
+Output files saved to:
+  - outputs/results/v6_chronology_gpt4o_generic.jsonl
+  - outputs/results/v6_chronology_gpt4o_specialized.jsonl
+  - outputs/results/v6_chronology_claude_sonnet.jsonl

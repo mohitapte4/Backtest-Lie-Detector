@@ -83,3 +83,5 @@ IEEE-conference-template-062824.tex
 *.pdf
 *.zip
 figures/*.drawio
+chatgpt words.txt
+proposal.tex

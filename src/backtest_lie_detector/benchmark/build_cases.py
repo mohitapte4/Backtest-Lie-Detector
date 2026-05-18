@@ -1017,6 +1017,48 @@ def get_false_valid_trap_cases_only() -> list[BenchmarkCase]:
     return FALSE_VALID_TRAP_CASES
 
 
+def generate_v6_cases() -> list[BenchmarkCase]:
+    """
+    Generate v6 benchmark with pure chronology test cases.
+    
+    V6 includes:
+    - All v5 cases (141)
+    - Chronology cases (8): pure temporal ordering tests
+    
+    Total: 149 cases
+    
+    These chronology cases isolate temporal reasoning from domain complexity,
+    testing whether LLMs can detect anachronisms (events out of order).
+    """
+    v5_cases = generate_v5_cases()
+    
+    try:
+        from backtest_lie_detector.benchmark.chronology_cases import CHRONOLOGY_CASES
+        all_cases = v5_cases + CHRONOLOGY_CASES
+    except ImportError:
+        all_cases = v5_cases
+    
+    # Ensure unique IDs
+    ids = [c.id for c in all_cases]
+    if len(ids) != len(set(ids)):
+        duplicates = [id for id in ids if ids.count(id) > 1]
+        raise ValueError(f"Duplicate case IDs found: {set(duplicates)}")
+    
+    return all_cases
+
+
+def get_chronology_cases_only() -> list[BenchmarkCase]:
+    """Get only the chronology cases for incremental evaluation."""
+    from backtest_lie_detector.benchmark.chronology_cases import CHRONOLOGY_CASES
+    return CHRONOLOGY_CASES
+
+
+def get_code_cases_only() -> list[BenchmarkCase]:
+    """Get only the code-based cases for incremental evaluation."""
+    from backtest_lie_detector.benchmark.code_cases import CODE_CASES
+    return CODE_CASES
+
+
 def print_v5_summary(cases: list[BenchmarkCase]) -> None:
     """Print V5-specific summary with false valid trap metrics."""
     print_benchmark_summary(cases)
@@ -1043,6 +1085,38 @@ def print_v5_summary(cases: list[BenchmarkCase]) -> None:
     print(f"  ambiguous cases: {ambiguous}")
     print(f"  false_valid_trap cases: {false_valid_trap}")
     print(f"  near_miss cases: {near_miss}")
+
+
+def print_v6_summary(cases: list[BenchmarkCase]) -> None:
+    """Print V6-specific summary with chronology case metrics."""
+    print_benchmark_summary(cases)
+    
+    # Count by tags
+    print(f"\nBy Case Tags:")
+    tag_counts = {}
+    for case in cases:
+        if hasattr(case, 'case_tags'):
+            for tag in case.case_tags:
+                tag_counts[tag] = tag_counts.get(tag, 0) + 1
+    
+    for tag, count in sorted(tag_counts.items(), key=lambda x: -x[1]):
+        print(f"  {tag}: {count}")
+    
+    # V6 breakdown
+    print(f"\nV6 Breakdown:")
+    trap_valid = len([c for c in cases if hasattr(c, 'case_tags') and 'trap_valid' in c.case_tags])
+    ambiguous = len([c for c in cases if hasattr(c, 'case_tags') and 'ambiguous' in c.case_tags])
+    false_valid_trap = len([c for c in cases if hasattr(c, 'case_tags') and 'false_valid_trap' in c.case_tags])
+    near_miss = len([c for c in cases if hasattr(c, 'case_tags') and 'near_miss' in c.case_tags])
+    chronology = len([c for c in cases if hasattr(c, 'case_tags') and 'chronology_trap' in c.case_tags])
+    pure_temporal = len([c for c in cases if hasattr(c, 'case_tags') and 'pure_temporal' in c.case_tags])
+    
+    print(f"  trap_valid cases: {trap_valid}")
+    print(f"  ambiguous cases: {ambiguous}")
+    print(f"  false_valid_trap cases: {false_valid_trap}")
+    print(f"  near_miss cases: {near_miss}")
+    print(f"  chronology_trap cases: {chronology}")
+    print(f"  pure_temporal cases: {pure_temporal}")
 
 
 if __name__ == "__main__":
@@ -1074,12 +1148,17 @@ if __name__ == "__main__":
         cases = generate_v5_cases()
         output_path = "data/benchmark/benchmark_v5.jsonl"
         print_v5_summary(cases)
+    elif len(sys.argv) > 1 and sys.argv[1] == "v6":
+        print("Generating v6 benchmark (with chronology cases)...")
+        cases = generate_v6_cases()
+        output_path = "data/benchmark/benchmark_v6.jsonl"
+        print_v6_summary(cases)
     else:
-        # Default to v5 (latest)
-        print("Generating v5 benchmark (with false valid trap cases)...")
-        cases = generate_v5_cases()
-        output_path = "data/benchmark/benchmark_v5.jsonl"
-        print_v5_summary(cases)
+        # Default to v6 (latest)
+        print("Generating v6 benchmark (with chronology cases)...")
+        cases = generate_v6_cases()
+        output_path = "data/benchmark/benchmark_v6.jsonl"
+        print_v6_summary(cases)
     
     save_benchmark(cases, output_path)
     

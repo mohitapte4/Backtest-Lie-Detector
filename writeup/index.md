@@ -39,6 +39,23 @@ These errors are easy to make and hard to catch. A backtest can look perfectly r
 
 ---
 
+## Relationship to Hallucination Benchmarks
+
+Existing LLM benchmarks like AA-Omniscience and TruthfulQA test whether models make up facts. They ask questions like "What year did X happen?" and measure whether the model gives correct answers or hallucinates incorrect ones. These benchmarks test factual recall.
+
+Our benchmark tests something different: can LLMs recognize when events are out of chronological order? Instead of asking "What is the date?", we ask "Is this sequence of events possible given these dates?" This is anachronism detection rather than fact retrieval.
+
+| Aspect | Hallucination Benchmarks | This Benchmark |
+|--------|-------------------------|----------------|
+| Tests | Does the LLM know facts? | Does the LLM understand temporal ordering? |
+| Question type | "What is X?" | "Is this workflow chronologically valid?" |
+| Failure mode | Making up facts | Missing anachronisms |
+| Domain | General knowledge | Finance-specific workflows |
+
+Both types of benchmarks measure reliability, but they target different capabilities. A model could score well on factual recall (knowing that META started trading June 9, 2022) but still miss the anachronism when that fact appears in context (using META for a June 1, 2022 trade). Our benchmark tests whether models can apply temporal knowledge to detect impossible sequences.
+
+---
+
 ## Benchmark Evolution: V1 → V5
 
 Our benchmark evolved over five iterations to create increasingly challenging tests:
