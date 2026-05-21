@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backtest Lie Detector | Can LLMs Catch Data Leakage?</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            line-height: 1.7;
+            color: #333;
+            background: #fafafa;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Hero */
+        .hero {
+            background: linear-gradient(135deg, #1a365d 0%, #2c5282 100%);
+            color: white;
+            padding: 80px 0 60px;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .hero .subtitle {
+            font-size: 1.25rem;
+            opacity: 0.9;
+            margin-bottom: 24px;
+        }
+
+        .hero .team {
+            font-size: 0.95rem;
+            opacity: 0.8;
+        }
+
+        .hero .course {
+            font-size: 0.85rem;
+            opacity: 0.7;
+            margin-top: 8px;
+        }
+
+        /* Main content */
+        main {
+            background: white;
+            padding: 48px 0;
+        }
+
+        section {
+            margin-bottom: 48px;
+        }
+
+        h2 {
+            font-size: 1.75rem;
+            color: #1a365d;
+            margin-bottom: 20px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        h3 {
+            font-size: 1.25rem;
+            color: #2d3748;
+            margin: 28px 0 12px;
+        }
+
+        p {
+            margin-bottom: 16px;
+            color: #4a5568;
+        }
+
+        /* Summary box */
+        .summary-box {
+            background: #ebf8ff;
+            border-left: 4px solid #3182ce;
+            padding: 20px 24px;
+            margin: 24px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .summary-box h3 {
+            margin-top: 0;
+            color: #2c5282;
+        }
+
+        .summary-box ul {
+            margin: 12px 0 0 20px;
+            color: #2d3748;
+        }
+
+        .summary-box li {
+            margin-bottom: 8px;
+        }
+
+        /* Tables */
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        th, td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        th {
+            background: #f7fafc;
+            color: #1a365d;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background: #f7fafc;
+        }
+
+        /* Highlight cells */
+        .good { color: #276749; font-weight: 600; }
+        .bad { color: #c53030; font-weight: 600; }
+        .neutral { color: #744210; }
+
+        /* Code blocks */
+        code {
+            background: #edf2f7;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9em;
+        }
+
+        pre {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+
+        pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+        }
+
+        /* Callout boxes */
+        .callout {
+            padding: 20px 24px;
+            border-radius: 8px;
+            margin: 24px 0;
+        }
+
+        .callout-warning {
+            background: #fffaf0;
+            border-left: 4px solid #dd6b20;
+        }
+
+        .callout-info {
+            background: #ebf8ff;
+            border-left: 4px solid #3182ce;
+        }
+
+        .callout-success {
+            background: #f0fff4;
+            border-left: 4px solid #38a169;
+        }
+
+        /* Lists */
+        ul, ol {
+            margin: 16px 0 16px 24px;
+            color: #4a5568;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        /* Links */
+        a {
+            color: #3182ce;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* Diagram boxes */
+        .diagram {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 24px;
+            margin: 24px 0;
+            font-family: 'Consolas', monospace;
+            font-size: 0.85rem;
+            white-space: pre;
+            overflow-x: auto;
+        }
+
+        /* Footer */
+        footer {
+            background: #1a365d;
+            color: white;
+            padding: 40px 0;
+            text-align: center;
+        }
+
+        footer p {
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 8px;
+        }
+
+        footer a {
+            color: #90cdf4;
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .hero h1 {
+                font-size: 1.75rem;
+            }
+            
+            h2 {
+                font-size: 1.4rem;
+            }
+            
+            th, td {
+                padding: 8px 12px;
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="hero">
+        <div class="container">
+            <h1>Backtest Lie Detector</h1>
+            <p class="subtitle">Can LLMs catch the data leakage bugs that break financial backtests?</p>
+            <p class="team">Mohit Apte, Anya Zakharov, Lucie Martin, Myra Singh</p>
+            <p class="course">UChicago Generative AI for Finance, Spring 2026</p>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            
+            <section>
+                <div class="summary-box">
+                    <h3>The Short Version</h3>
+                    <ul>
+                        <li>We built a 141-case benchmark to test if LLMs can spot point-in-time errors in financial research</li>
+                        <li>GPT-4o catches 83% of cases, but the real story is in what it misses</li>
+                        <li>Generic prompts work better overall, but specialized prompts catch 100% of tricky violations</li>
+                        <li>All models struggle with the same thing: they're too cautious, flagging valid work as broken</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section>
+                <h2>The Problem We're Solving</h2>
+                
+                <p>If you've worked with financial data, you know this pain: you build a backtest, the returns look great, and then someone points out you accidentally used tomorrow's data. Your strategy didn't predict the market. It just peeked at the answers.</p>
+                
+                <p>These mistakes are called point-in-time errors. They're everywhere in financial research, and they're hard to catch. A backtest using the wrong ticker symbol, data from a filing that wasn't public yet, or a stock that got delisted years ago can completely invalidate your results. The backtest runs fine. The numbers look reasonable. But the whole thing is wrong.</p>
+
+                <p>People are starting to use LLMs to review their research workflows. We wanted to know: can they actually catch these bugs?</p>
+
+                <h3>What Goes Wrong</h3>
+                
+                <div class="table-wrapper">
+                    <table>
+                        <tr>
+                            <th>Error Type</th>
+                            <th>Example</th>
+                            <th>Why It Breaks Things</th>
+                        </tr>
+                        <tr>
+                            <td>Ticker Time Travel</td>
+                            <td>Using META ticker for 2018 Facebook trades</td>
+                            <td>META didn't exist until June 2022. The ticker was FB.</td>
+                        </tr>
+                        <tr>
+                            <td>Filing Clock</td>
+                            <td>Trading at 3:55 PM based on a 4:07 PM filing</td>
+                            <td>The information wasn't public when the trade happened</td>
+                        </tr>
+                        <tr>
+                            <td>Accounting Availability</td>
+                            <td>Using fiscal year 2022 data in January 2023</td>
+                            <td>The 10-K wasn't filed until February</td>
+                        </tr>
+                        <tr>
+                            <td>Survivorship Bias</td>
+                            <td>Only backtesting on currently listed stocks</td>
+                            <td>Ignores all the companies that went bankrupt</td>
+                        </tr>
+                    </table>
+                </div>
+            </section>
+
+            <section>
+                <h2>What We Built</h2>
+                
+                <p>We created a benchmark with 141 test cases, each describing a financial research workflow. Some workflows are valid. Some have bugs. The model's job is to figure out which is which.</p>
+
+                <div class="diagram">Benchmark Structure (141 cases)
+├── Ticker Time Machine (48 cases)
+│   └── Wrong tickers, share class confusion, corporate actions
+├── Filing Clock (31 cases)
+│   └── SEC timestamp errors, intraday timing, timezone issues
+├── Accounting Availability (24 cases)
+│   └── Fiscal vs filing dates, restatement leakage
+└── Survivorship & Delisting (38 cases)
+    └── Universe bias, missing delisting returns
+
+Labels: 41 Valid | 86 Invalid | 14 Ambiguous</div>
+
+                <p>Each case comes from real financial data documentation. We pulled examples from CRSP manuals, SEC EDGAR filing rules, Compustat guides, and academic papers on survivorship bias. These aren't made-up scenarios. They're actual mistakes people make.</p>
+
+                <h3>How It's Different From Other Benchmarks</h3>
+                
+                <p>Most LLM benchmarks for finance test whether models know facts. "What year did Apple go public?" or "What's the current Fed funds rate?" Those are knowledge retrieval tasks.</p>
+                
+                <p>Our benchmark tests something different: can the model recognize when events are out of order? We're not asking "when did META start trading?" We're asking "is it valid to use META in a June 1, 2022 backtest?" That's chronological reasoning, not fact lookup.</p>
+
+                <div class="table-wrapper">
+                    <table>
+                        <tr>
+                            <th>Aspect</th>
+                            <th>Hallucination Benchmarks</th>
+                            <th>Our Benchmark</th>
+                        </tr>
+                        <tr>
+                            <td>Tests</td>
+                            <td>Does the model know facts?</td>
+                            <td>Can it spot impossible timelines?</td>
+                        </tr>
+                        <tr>
+                            <td>Question Type</td>
+                            <td>"What is X?"</td>
+                            <td>"Is this workflow valid given these dates?"</td>
+                        </tr>
+                        <tr>
+                            <td>Failure Mode</td>
+                            <td>Making up facts</td>
+                            <td>Missing time-based bugs</td>
+                        </tr>
+                    </table>
+                </div>
+            </section>
+
+            <section>
+                <h2>Main Results</h2>
+                
+                <p>We tested GPT-4o with two different prompts (generic and specialized finance auditor), Claude Sonnet, and GPT-4o-mini. Here's what happened:</p>
+
+                <div class="table-wrapper">
+                    <table>
+                        <tr>
+                            <th>Model</th>
+                            <th>Accuracy</th>
+                            <th>False Invalid Rate</th>
+                            <th>False Valid Rate</th>
+                        </tr>
+                        <tr>
+                            <td>GPT-4o (Generic)</td>
+                            <td class="good">83.0%</td>
+                            <td>19.5%</td>
+                            <td class="neutral">4.7%</td>
+                        </tr>
+                        <tr>
+                            <td>GPT-4o (Specialized)</td>
+                            <td>80.9%</td>
+                            <td>29.3%</td>
+                            <td class="good">0.0%</td>
+                        </tr>
+                        <tr>
+                            <td>Claude Sonnet</td>
+                            <td>78.0%</td>
+                            <td class="bad">43.9%</td>
+                            <td class="good">1.2%</td>
+                        </tr>
+                        <tr>
+                            <td>GPT-4o-mini</td>
+                            <td>63.8%</td>
+                            <td class="bad">97.6%</td>
+                            <td class="good">0.0%</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <p>The numbers tell an interesting story. GPT-4o with a generic prompt gets the most answers right (83%), but it also lets through some broken workflows (4.7% false valid rate). The specialized prompt drops accuracy a bit but catches every single bad workflow.</p>
+
+                <div class="callout callout-warning">
+                    <strong>Watch out for GPT-4o-mini.</strong> It has a 0% false valid rate, which sounds great until you see the 97.6% false invalid rate. It catches every bug by rejecting almost everything. That's not useful.
+                </div>
+
+                <h3>Compared to Simple Rules</h3>
+                
+                <p>We also tested basic rule-based approaches to see if LLMs actually add value. They do.</p>
+
+                <div class="table-wrapper">
+                    <table>
+                        <tr>
+                            <th>Approach</th>
+                            <th>Accuracy</th>
+                            <th>False Valid Rate</th>
+                        </tr>
+                        <tr>
+                            <td>Always say "invalid"</td>
+                            <td>56.0%</td>
+                            <td class="good">0.0%</td>
+                        </tr>
+                        <tr>
+                            <td>Keyword matching</td>
+                            <td>40.8%</td>
+                            <td class="bad">82.9%</td>
+                        </tr>
+                        <tr>
+                            <td>Rule-based patterns</td>
+                            <td>38.4%</td>
+                            <td class="bad">81.4%</td>
+                        </tr>
+                        <tr>
+                            <td>GPT-4o (Generic)</td>
+                            <td class="good">83.0%</td>
+                            <td>4.7%</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <p>Keyword matching and rule-based systems let through 80%+ of broken workflows. LLMs get that down to under 5%. That's a real improvement.</p>
+
+                <h3>The Tricky Cases</h3>
+                
+                <p>We designed 16 false-valid-trap cases: workflows that sound professional and well-designed but have subtle bugs hidden in the implementation. These test whether models can see past reassuring language.</p>
+
+                <div class="table-wrapper">
+                    <table>
+                        <tr>
+                            <th>Model</th>
+                            <th>Trap Accuracy</th>
+                            <th>Bugs Missed</th>
+                        </tr>
+                        <tr>
+                            <td>GPT-4o (Generic)</td>
+                            <td>81.2%</td>
+                            <td class="bad">3 of 16</td>
+                        </tr>
+                        <tr>
+                            <td>GPT-4o (Specialized)</td>
+                            <td>93.8%</td>
+                            <td class="good">0 of 16</td>
+                        </tr>
+                        <tr>
+                            <td>Claude Sonnet</td>
+                            <td class="good">100%</td>
+                            <td class="good">0 of 16</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <p>The generic prompt missed three sneaky bugs:</p>
+                <ul>
+                    <li><strong>Lag from wrong date:</strong> Uses a 6-month lag from fiscal period end, not filing date. Sounds careful, but the 10-K might not be filed for 3 more months.</li>
+                    <li><strong>Split-adjusted price filter:</strong> Uses split-adjusted prices for a $5 price filter. A stock at $50 that later split 10:1 would show up as $5 in historical data.</li>
+                    <li><strong>Current industry codes:</strong> Uses 2026 GICS codes for a 2000-2020 backtest. Industries get reclassified over time.</li>
+                </ul>
+
+                <p>The specialized prompt and Claude caught all of these. If you're reviewing high-stakes research, the specialized prompt is worth the extra false alarms.</p>
+            </section>
+
+            <section>
+                <h2>New Test: Pure Chronology Cases</h2>
+                
+                <p>Our professor asked a good question: does the model actually understand time ordering, or is it just pattern matching on finance terms? To find out, we added 15 cases that test pure temporal reasoning.</p>
+
+                <p>These cases strip out the finance complexity. They just ask: did event A happen before event B?</p>
+
+                <div class="table-wrapper">
+                    <table>
+                        <tr>
+                            <th>Model</th>
+                            <th>Overall</th>
+                            <th>Valid Cases (6)</th>
+                            <th>Invalid Cases (9)</th>
+                        </tr>
+                        <tr>
+                            <td>GPT-4o (Generic)</td>
+                            <td class="good">80.0%</td>
+                            <td>50.0%</td>
+                            <td class="good">100%</td>
+                        </tr>
+                        <tr>
+                            <td>GPT-4o (Specialized)</td>
+                            <td>73.3%</td>
+                            <td>33.3%</td>
+                            <td class="good">100%</td>
+                        </tr>
+                        <tr>
+                            <td>Claude Sonnet</td>
+                            <td class="good">80.0%</td>
+                            <td>50.0%</td>
+                            <td class="good">100%</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <p>All models caught 100% of the invalid temporal sequences. When the dates are clearly wrong, they see it.</p>
+
+                <p>But they still fail on valid cases. The pattern is consistent: models add requirements that aren't in the prompt. One case had a trade 45 seconds after information became available. All three models flagged it as "insufficient time to process the information." The information was available. The model just decided 45 seconds wasn't enough.</p>
+
+                <div class="callout callout-info">
+                    <strong>They're not fooled by misleading language.</strong> We wrote cases like "a researcher studies market reactions after Apple's earnings" where the actual dates showed the portfolio was formed before the announcement. Models caught these. They're reading the dates, not just the narrative.
+                </div>
+            </section>
+
+            <section>
+                <h2>New Test: Code Auditing</h2>
+                
+                <p>Reading prose descriptions is one thing. Can models actually review code? We added 12 cases with real Python snippets containing bugs (or not).</p>
+
+                <div class="table-wrapper">
+                    <table>
+                        <tr>
+                            <th>Model</th>
+                            <th>Overall</th>
+                            <th>Bug Detection (8)</th>
+                            <th>Valid Code (4)</th>
+                        </tr>
+                        <tr>
+                            <td>GPT-4o (Generic)</td>
+                            <td>50.0%</td>
+                            <td>62.5%</td>
+                            <td>25.0%</td>
+                        </tr>
+                        <tr>
+                            <td>GPT-4o (Specialized)</td>
+                            <td>58.3%</td>
+                            <td class="good">87.5%</td>
+                            <td class="bad">0.0%</td>
+                        </tr>
+                        <tr>
+                            <td>Claude Sonnet</td>
+                            <td class="good">66.7%</td>
+                            <td class="good">100%</td>
+                            <td class="bad">0.0%</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <p>Code is harder. Accuracy dropped 13-30 percentage points compared to prose cases.</p>
+
+                <p>Claude caught every single code bug (100%), but it also flagged every valid code snippet as broken (0% on trap valid cases). The specialized GPT-4o prompt showed the same pattern. If you want to catch bugs, use Claude or the specialized prompt. Just be ready to manually verify anything it flags.</p>
+
+                <h3>Bugs They Caught</h3>
+                <ul>
+                    <li><strong>Comment lies about lag:</strong> Docstring says "6 months", code says <code>lag_months=3</code></li>
+                    <li><strong>Unfiltered merge:</strong> No date filter before merging fundamentals data</li>
+                    <li><strong>Current S&P 500 list:</strong> Uses 2026 constituents for a 2010-2020 backtest</li>
+                    <li><strong>Professional docs, wrong implementation:</strong> Nice docstrings but uses <code>filingDate</code> instead of <code>acceptanceDatetime</code></li>
+                </ul>
+
+                <h3>Bugs GPT-4o Generic Missed</h3>
+                <ul>
+                    <li><strong>datadate vs rdq:</strong> Uses <code>datadate</code> (fiscal period end) instead of <code>rdq</code> (report date) for availability. This requires knowing Compustat column semantics.</li>
+                    <li><strong>Shift off-by-one:</strong> <code>shift(1)</code> vs <code>shift(2)</code> error in pandas. Requires careful reading.</li>
+                    <li><strong>Adjusted price filter:</strong> Uses split-adjusted prices for a price level filter.</li>
+                </ul>
+
+                <h3>Valid Code They All Flagged</h3>
+                <p>Every model flagged these correct implementations:</p>
+                <ul>
+                    <li><strong>Delisting returns:</strong> Correct Shumway (1997) compounding formula, but models thought the compounding was wrong</li>
+                    <li><strong>Adjusted price for returns:</strong> Correct use of adjusted prices for return calculation (not filtering), but models confused it with the filter use case</li>
+                    <li><strong>Misleading variable name:</strong> Variable called <code>future_eps</code> but used correctly with <code>shift(0)</code>. The name triggered suspicion.</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>What This Means in Practice</h2>
+                
+                <h3>If you're using LLMs to review research:</h3>
+                <ul>
+                    <li><strong>Trust "valid" verdicts.</strong> The false valid rate is 0-5%, so if the model says your workflow is fine, it probably is.</li>
+                    <li><strong>Double-check "invalid" verdicts.</strong> 20-44% of rejections are false alarms. Don't throw out good work because the model got nervous.</li>
+                    <li><strong>Use specialized prompts for high-stakes reviews.</strong> You'll get more false alarms, but you won't miss the tricky bugs.</li>
+                    <li><strong>Code review needs human verification.</strong> Models catch most bugs but flag valid code too often to trust blindly.</li>
+                </ul>
+
+                <h3>The Safety vs. Accuracy Trade-off</h3>
+
+                <div class="table-wrapper">
+                    <table>
+                        <tr>
+                            <th>Priority</th>
+                            <th>Best Choice</th>
+                            <th>Trade-off</th>
+                        </tr>
+                        <tr>
+                            <td>Maximum safety (no false approvals)</td>
+                            <td>Specialized prompt</td>
+                            <td>More false alarms to review</td>
+                        </tr>
+                        <tr>
+                            <td>Best overall accuracy</td>
+                            <td>Generic prompt</td>
+                            <td>Might miss subtle bugs</td>
+                        </tr>
+                        <tr>
+                            <td>Best repair suggestions</td>
+                            <td>Claude Sonnet</td>
+                            <td>Lower classification accuracy</td>
+                        </tr>
+                        <tr>
+                            <td>Code review</td>
+                            <td>Claude (verify manually)</td>
+                            <td>High false alarm rate on valid code</td>
+                        </tr>
+                    </table>
+                </div>
+            </section>
+
+            <section>
+                <h2>Limitations</h2>
+                
+                <p>Some things to keep in mind about this work:</p>
+                <ul>
+                    <li>We tested two model families (GPT-4o and Claude). Other models might behave differently.</li>
+                    <li>141 cases covers the major patterns but isn't exhaustive. There are more ways to mess up a backtest.</li>
+                    <li>Ground truth labeling requires finance expertise. Some edge cases are genuinely debatable.</li>
+                    <li>We only tested English prompts.</li>
+                    <li>We didn't fine-tune anything. These are base model capabilities.</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>Try It Yourself</h2>
+                
+                <pre><code># Clone and setup
+git clone https://github.com/your-org/backtest-lie-detector
+cd backtest-lie-detector
+pip install -e ".[all]"
+
+# Generate benchmark
+python -m backtest_lie_detector.benchmark.build_cases v6
+
+# Run evaluation
+python run_v6_chronology_only.py
+python run_code_cases_eval.py</code></pre>
+
+                <p>The repo includes all 141 benchmark cases, evaluation scripts, and our raw model outputs so you can reproduce the results.</p>
+            </section>
+
+            <section>
+                <h2>AI Usage Statement</h2>
+                <p>We used AI tools during this project. Claude helped with code generation and drafting documentation. All benchmark cases were human-reviewed for correctness. The benchmark design, ground truth labeling, results interpretation, and failure analysis are our own work.</p>
+            </section>
+
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>Backtest Lie Detector</p>
+            <p>UChicago Generative AI for Finance, Spring 2026</p>
+            <p><a href="https://github.com/your-org/backtest-lie-detector">View on GitHub</a></p>
+        </div>
+    </footer>
+</body>
+</html>
