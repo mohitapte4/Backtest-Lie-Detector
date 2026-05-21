@@ -26,33 +26,40 @@
 
         /* Hero */
         .hero {
-            background: linear-gradient(135deg, #1a365d 0%, #2c5282 100%);
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 50%, #1e40af 100%);
             color: white;
-            padding: 80px 0 60px;
+            padding: 100px 0 80px;
             text-align: center;
         }
 
         .hero h1 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 16px;
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            letter-spacing: -0.02em;
         }
 
         .hero .subtitle {
-            font-size: 1.25rem;
-            opacity: 0.9;
-            margin-bottom: 24px;
+            font-size: 1.35rem;
+            opacity: 1;
+            margin-bottom: 32px;
+            color: #e0e7ff;
+            font-weight: 400;
         }
 
         .hero .team {
-            font-size: 0.95rem;
-            opacity: 0.8;
+            font-size: 1rem;
+            opacity: 1;
+            color: #c7d2fe;
+            font-weight: 500;
         }
 
         .hero .course {
-            font-size: 0.85rem;
-            opacity: 0.7;
-            margin-top: 8px;
+            font-size: 0.9rem;
+            opacity: 1;
+            margin-top: 12px;
+            color: #a5b4fc;
         }
 
         /* Main content */
@@ -236,6 +243,285 @@
             color: #90cdf4;
         }
 
+        /* Case Explorer */
+        .explorer-controls {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .search-box {
+            margin-bottom: 12px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            outline: none;
+        }
+
+        .search-box input:focus {
+            border-color: #3182ce;
+            box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+
+        .filter-row select {
+            padding: 8px 12px;
+            font-size: 0.9rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            min-width: 150px;
+        }
+
+        .case-count {
+            font-size: 0.9rem;
+            color: #718096;
+            margin-top: 12px;
+        }
+
+        .filter-row select {
+            flex: 1;
+            min-width: 140px;
+        }
+
+        .show-cases-btn {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 16px;
+            transition: background 0.15s ease;
+        }
+
+        .show-cases-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .show-cases-btn:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        .explorer-placeholder {
+            text-align: center;
+            padding: 40px 20px;
+            background: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            color: #64748b;
+        }
+
+        .explorer-placeholder p {
+            margin: 0;
+            color: #64748b;
+        }
+
+        .case-list {
+            display: grid;
+            gap: 12px;
+            max-height: 600px;
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+
+        .case-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .case-list::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+
+        .case-list::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        .case-list::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .case-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px 20px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .case-card:hover {
+            border-color: #3182ce;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .case-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+
+        .case-id {
+            font-family: 'Consolas', monospace;
+            font-size: 0.85rem;
+            color: #1a365d;
+            font-weight: 600;
+        }
+
+        .case-badges {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .badge-valid { background: #c6f6d5; color: #276749; }
+        .badge-invalid { background: #fed7d7; color: #c53030; }
+        .badge-ambiguous { background: #fefcbf; color: #744210; }
+        .badge-easy { background: #e2e8f0; color: #4a5568; }
+        .badge-medium { background: #bee3f8; color: #2b6cb0; }
+        .badge-hard { background: #e9d8fd; color: #6b46c1; }
+
+        .case-prompt {
+            font-size: 0.9rem;
+            color: #4a5568;
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .case-module {
+            font-size: 0.8rem;
+            color: #718096;
+            margin-top: 8px;
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            font-size: 28px;
+            color: #718096;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            color: #2d3748;
+        }
+
+        #modal-body {
+            padding: 24px;
+        }
+
+        #modal-body h3 {
+            margin-top: 0;
+            margin-bottom: 16px;
+            color: #1a365d;
+        }
+
+        #modal-body .detail-section {
+            margin-bottom: 20px;
+        }
+
+        #modal-body .detail-label {
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 0.85rem;
+            margin-bottom: 4px;
+        }
+
+        #modal-body .detail-value {
+            color: #4a5568;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        #modal-body .prompt-text {
+            background: #f7fafc;
+            padding: 16px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            white-space: pre-wrap;
+        }
+
+        #modal-body .repair-list {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        #modal-body .repair-list li {
+            margin-bottom: 4px;
+        }
+
+        #modal-body .violations-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        #modal-body .violation-tag {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-family: monospace;
+        }
+
         /* Responsive */
         @media (max-width: 640px) {
             .hero h1 {
@@ -249,6 +535,14 @@
             th, td {
                 padding: 8px 12px;
                 font-size: 0.85rem;
+            }
+
+            .filter-row {
+                flex-direction: column;
+            }
+
+            .filter-row select {
+                width: 100%;
             }
         }
     </style>
@@ -643,6 +937,58 @@ Labels: 41 Valid | 86 Invalid | 14 Ambiguous</div>
                 </div>
             </section>
 
+            <section id="case-explorer">
+                <h2>Case Explorer</h2>
+                
+                <p>Browse all 85 benchmark cases included in this demo. Use the filters to narrow down by module, difficulty, or expected validity. Click any case to see full details.</p>
+
+                <div class="explorer-controls">
+                    <div class="filter-row">
+                        <select id="filter-module">
+                            <option value="">Select a module...</option>
+                            <option value="all">All Modules</option>
+                            <option value="ticker_time_machine">Ticker Time Machine</option>
+                            <option value="filing_clock">Filing Clock</option>
+                            <option value="accounting_availability">Accounting Availability</option>
+                            <option value="survivorship_delisting">Survivorship & Delisting</option>
+                        </select>
+                        <select id="filter-validity">
+                            <option value="">Validity...</option>
+                            <option value="all">All Validity</option>
+                            <option value="valid">Valid</option>
+                            <option value="invalid">Invalid</option>
+                            <option value="ambiguous">Ambiguous</option>
+                        </select>
+                        <select id="filter-difficulty">
+                            <option value="">Difficulty...</option>
+                            <option value="all">All Difficulty</option>
+                            <option value="easy">Easy</option>
+                            <option value="medium">Medium</option>
+                            <option value="hard">Hard</option>
+                        </select>
+                    </div>
+                    <div class="search-box">
+                        <input type="text" id="case-search" placeholder="Search by keyword (e.g., META, Compustat, delisting)..." />
+                    </div>
+                    <div class="case-count" id="case-count-display" style="display: none;">Showing <span id="visible-count">0</span> cases</div>
+                    <button class="show-cases-btn" id="show-cases-btn" disabled>Select filters above to browse cases</button>
+                </div>
+
+                <div id="case-placeholder" class="explorer-placeholder">
+                    <p>Use the filters above to explore benchmark cases.</p>
+                    <p style="margin-top: 8px; font-size: 0.9rem;">Try selecting "Ticker Time Machine" to see identifier-related cases, or filter by "Hard" difficulty to see the trickiest examples.</p>
+                </div>
+
+                <div id="case-list" class="case-list" style="display: none;"></div>
+
+                <div id="case-modal" class="modal" style="display: none;">
+                    <div class="modal-content">
+                        <span class="modal-close">&times;</span>
+                        <div id="modal-body"></div>
+                    </div>
+                </div>
+            </section>
+
             <section>
                 <h2>Limitations</h2>
                 
@@ -689,5 +1035,274 @@ python run_code_cases_eval.py</code></pre>
             <p><a href="https://github.com/your-org/backtest-lie-detector">View on GitHub</a></p>
         </div>
     </footer>
+    <script>
+    // Benchmark cases data (loaded from JSONL)
+    const BENCHMARK_CASES = [
+        {"id":"ttm_meta_2018_cambridge","module":"ticker_time_machine","difficulty":"easy","prompt":"A researcher studies the Cambridge Analytica event on 2018-03-20 and queries daily returns using ticker META. Audit this workflow. Is it point-in-time valid? If not, identify the issue and propose a repair.","expected_validity":"invalid","expected_violations":["identifier_time_travel"],"expected_repair":["Use the historical ticker valid on 2018-03-20, not the modern ticker.","The correct ticker was FB on 2018-03-20.","Resolve the security using a point-in-time identifier such as CRSP PERMNO."],"ground_truth_notes":"Meta Platforms did not trade under ticker META on 2018-03-20. The company was still Facebook Inc. trading under ticker FB. META became the ticker on June 9, 2022, after the corporate rebrand."},
+        {"id":"ttm_google_share_class_2014","module":"ticker_time_machine","difficulty":"medium","prompt":"A researcher studies Google's stock split announcement on April 2, 2014 and queries returns using ticker GOOGL. The researcher uses GOOGL throughout their backtest from 2010 to 2020. Audit this workflow for point-in-time validity.","expected_validity":"invalid","expected_violations":["identifier_time_travel","issuer_security_confusion"],"expected_repair":["GOOGL (Class A) and GOOG (Class C) were created in April 2014 stock split.","Before April 2014, only GOOG existed as a single share class.","Use GOOG for pre-split period and clarify which share class is intended post-split."],"ground_truth_notes":"Google's Class A (GOOGL) and Class C (GOOG) share structure was created in the April 2014 stock split. Before this, there was only one ticker: GOOG."},
+        {"id":"ttm_att_ticker_reuse","module":"ticker_time_machine","difficulty":"hard","prompt":"A researcher analyzes returns for telecommunications companies using ticker 'T' from 1980 to 2020. They assume 'T' consistently refers to AT&T throughout. Audit this workflow for point-in-time validity.","expected_validity":"invalid","expected_violations":["identifier_time_travel","issuer_security_confusion"],"expected_repair":["Use CRSP PERMNO or CUSIP to track AT&T across corporate restructurings.","The original AT&T (Ma Bell) was broken up in 1984.","The current AT&T Inc. (ticker T) is the result of SBC acquiring AT&T in 2005."],"ground_truth_notes":"The ticker 'T' has a complex history. The original AT&T was broken up in 1984. SBC Communications acquired AT&T Corp in 2005 and adopted the AT&T name and ticker."},
+        {"id":"filing_clock_after_close_8k","module":"filing_clock","difficulty":"easy","prompt":"A strategy trades at 3:55 PM ET on 2021-05-03 using information from an 8-K accepted by EDGAR at 4:07 PM ET on the same day. Audit this workflow. Is it valid?","expected_validity":"invalid","expected_violations":["filing_clock_leakage"],"expected_repair":["Do not use the 8-K for a decision timestamp before the EDGAR acceptance time.","Move the trade decision to after the filing was available."],"ground_truth_notes":"The filing was accepted at 4:07 PM ET, but the trading decision was made at 3:55 PM ET. The information in the 8-K was not available at decision time."},
+        {"id":"filing_clock_weekend_10k","module":"filing_clock","difficulty":"medium","prompt":"A company files its 10-K on Saturday, March 12, 2022 at 2:30 PM ET. A trading strategy uses information from this 10-K to trade at market open on Monday, March 14, 2022 at 9:30 AM ET. Audit this workflow.","expected_validity":"valid","expected_violations":[],"expected_repair":[],"ground_truth_notes":"The 10-K was filed on Saturday and the trade occurs at Monday market open. The filing was available for over 40 hours before the trade. This is valid."},
+        {"id":"filing_clock_premarket_earnings","module":"filing_clock","difficulty":"medium","prompt":"A company releases earnings via 8-K filed at 7:15 AM ET on 2023-02-15. A trading strategy uses this earnings information to trade at 9:31 AM ET the same day. Is this workflow point-in-time valid?","expected_validity":"valid","expected_violations":[],"expected_repair":[],"ground_truth_notes":"The 8-K was filed at 7:15 AM ET, over 2 hours before the trade at 9:31 AM ET. The information was publicly available before market open. This is valid."},
+        {"id":"acct_fy_end_vs_filing_date","module":"accounting_availability","difficulty":"easy","prompt":"A portfolio is formed on 2023-01-15 using fiscal-year 2022 net income from Compustat. The company's fiscal year ended on 2022-12-31, but the 10-K was filed on 2023-02-20. Audit this workflow.","expected_validity":"invalid","expected_violations":["accounting_availability_leakage"],"expected_repair":["Do not treat fiscal year end as the information availability date.","Use only accounting variables from filings available before portfolio formation."],"ground_truth_notes":"The 2022 annual data was not publicly available on 2023-01-15. The 10-K containing this data was not filed until 2023-02-20."},
+        {"id":"acct_quarterly_availability","module":"accounting_availability","difficulty":"medium","prompt":"A strategy forms portfolios on the first trading day of each month using the most recent quarterly earnings. In April 2023, it uses Q1 2023 earnings which were reported on April 25, 2023. The portfolio was formed on April 3, 2023. Audit this workflow.","expected_validity":"invalid","expected_violations":["accounting_availability_leakage"],"expected_repair":["Use only earnings data from reports filed before portfolio formation.","On April 3, 2023, the most recent available data would be Q4 2022."],"ground_truth_notes":"Q1 2023 ended on March 31, 2023, but the earnings were not reported until April 25, 2023. Using Q1 2023 data on April 3, 2023 is look-ahead bias."},
+        {"id":"acct_restatement_leakage","module":"accounting_availability","difficulty":"hard","prompt":"A researcher backtests a strategy using Compustat data from 2005-2015. In 2012, Company XYZ restated its 2010 financials due to an accounting error. The backtest uses the restated 2010 values for portfolio formation in January 2011. Audit this workflow.","expected_validity":"invalid","expected_violations":["restatement_leakage"],"expected_repair":["Use point-in-time data that reflects what was known at each historical date.","The restated values from 2012 were not available in January 2011."],"ground_truth_notes":"Restated financials incorporate corrections made after the original filing. Using restated 2010 values in 2011 is look-ahead bias because the restatement did not occur until 2012."},
+        {"id":"survivorship_current_universe_2000_2020","module":"survivorship_delisting","difficulty":"easy","prompt":"A backtest from 2000 to 2020 uses only companies that are still listed in 2026. It excludes companies that delisted or merged before 2026. Audit this workflow.","expected_validity":"invalid","expected_violations":["survivorship_bias","delisting_return_omission"],"expected_repair":["Construct the investable universe point-in-time.","Include firms that existed during the backtest even if they later delisted."],"ground_truth_notes":"Using only firms alive in 2026 introduces survivorship bias. The backtest excludes companies like Lehman Brothers, Enron, and thousands of other firms that existed during 2000-2020 but no longer trade."},
+        {"id":"survivorship_delisting_returns_missing","module":"survivorship_delisting","difficulty":"medium","prompt":"A momentum strategy backtest from 2000-2010 uses CRSP daily returns. When a stock delists, the strategy simply drops the stock from the portfolio on the last trading day and ignores any delisting return. Audit this workflow.","expected_validity":"invalid","expected_violations":["delisting_return_omission"],"expected_repair":["Include CRSP delisting returns (DLRET) when stocks delist.","For performance-related delistings, apply appropriate delisting return assumptions."],"ground_truth_notes":"CRSP provides delisting returns that capture the final return when a stock stops trading. Ignoring these returns, especially for distressed delistings, biases performance upward."},
+        {"id":"survivorship_sp500_historical","module":"survivorship_delisting","difficulty":"medium","prompt":"A researcher backtests a value strategy on S&P 500 stocks from 1990 to 2020 using the current (2026) S&P 500 constituent list. Audit this workflow.","expected_validity":"invalid","expected_violations":["survivorship_bias"],"expected_repair":["Use historical S&P 500 constituent lists as of each rebalance date.","Account for index additions and deletions over time."],"ground_truth_notes":"The S&P 500 composition changes frequently. Using current constituents for historical analysis excludes companies that were in the index but later removed."},
+        {"id":"valid_historical_ticker_apple","module":"ticker_time_machine","difficulty":"easy","prompt":"A researcher studies Apple's iPhone announcement on January 9, 2007 and queries daily returns using ticker AAPL. Audit this workflow.","expected_validity":"valid","expected_violations":[],"expected_repair":[],"ground_truth_notes":"Apple Inc. has traded under ticker AAPL continuously since going public in 1980. Using AAPL for the 2007 iPhone event is point-in-time valid."},
+        {"id":"valid_lagged_accounting_data","module":"accounting_availability","difficulty":"easy","prompt":"A portfolio is formed on 2023-04-01 using fiscal-year 2022 data. The company filed its 10-K on 2023-02-25. Audit this workflow.","expected_validity":"valid","expected_violations":[],"expected_repair":[],"ground_truth_notes":"The 10-K was filed on February 25, 2023, over a month before the portfolio formation date of April 1, 2023. The data was publicly available."},
+        {"id":"ttm_twitter_x_2020","module":"ticker_time_machine","difficulty":"easy","prompt":"A researcher studies Twitter's earnings announcement on October 29, 2020 and queries stock returns using ticker X. Audit this workflow.","expected_validity":"invalid","expected_violations":["identifier_time_travel"],"expected_repair":["Twitter traded under ticker TWTR until the company was acquired in 2022.","X as a ticker for Twitter/X Corp did not exist in 2020."],"ground_truth_notes":"Twitter traded under ticker TWTR from its IPO in 2013 until October 2022 when Elon Musk acquired the company and took it private."},
+        {"id":"ttm_kraft_mondelez_2010","module":"ticker_time_machine","difficulty":"medium","prompt":"A researcher analyzes Kraft Foods' financial performance in 2010 using ticker MDLZ. Audit this workflow for point-in-time validity.","expected_validity":"invalid","expected_violations":["identifier_time_travel","issuer_security_confusion"],"expected_repair":["Kraft Foods traded under ticker KFT until the 2012 spinoff.","MDLZ (Mondelez) was created in the October 2012 spinoff."],"ground_truth_notes":"Kraft Foods split into two companies in October 2012: Kraft Foods Group (KRFT) and Mondelez International (MDLZ). In 2010, only KFT existed."},
+        {"id":"ttm_valid_microsoft","module":"ticker_time_machine","difficulty":"easy","prompt":"A researcher studies Microsoft's antitrust ruling on April 3, 2000 and queries daily returns using ticker MSFT. Audit this workflow.","expected_validity":"valid","expected_violations":[],"expected_repair":[],"ground_truth_notes":"Microsoft has traded under ticker MSFT continuously since its IPO in 1986. Using MSFT for the year 2000 antitrust event is point-in-time valid."},
+        {"id":"ttm_ge_spinoffs_2021","module":"ticker_time_machine","difficulty":"hard","prompt":"A researcher backtests a conglomerate strategy from 2015-2023 using ticker GE to represent General Electric throughout the entire period. The backtest treats GE as a single continuous security. Audit this workflow.","expected_validity":"invalid","expected_violations":["issuer_security_confusion"],"expected_repair":["GE underwent major spinoffs: GE Healthcare (GEHC) in 2023 and GE Vernova in 2024.","The current GE (now GE Aerospace) is a different business than historical GE."],"ground_truth_notes":"General Electric spun off GE Healthcare in January 2023 and GE Vernova in April 2024. The remaining company became GE Aerospace."},
+        {"id":"ttm_worldcom_mci_2000","module":"ticker_time_machine","difficulty":"hard","prompt":"A researcher studies returns for telecommunications companies in 2000 and includes WorldCom using ticker WCOM. The backtest extends through 2010. Audit this workflow.","expected_validity":"invalid","expected_violations":["identifier_time_travel","survivorship_bias"],"expected_repair":["WorldCom filed for bankruptcy in July 2002 and was delisted.","Handle the delisting properly and do not extend WCOM beyond its trading period."],"ground_truth_notes":"WorldCom collapsed in the accounting scandal of 2002. It was delisted after bankruptcy and eventually merged into Verizon."},
+        {"id":"ttm_berkshire_share_class","module":"ticker_time_machine","difficulty":"medium","prompt":"A researcher queries Berkshire Hathaway returns from 1990-2020 using only ticker BRK.B throughout. Audit this workflow.","expected_validity":"invalid","expected_violations":["identifier_time_travel"],"expected_repair":["BRK.B (Class B shares) was created in 1996.","For pre-1996 data, use BRK.A or BRK (the original single class)."],"ground_truth_notes":"Berkshire Hathaway Class B shares (BRK.B) were created in May 1996. Before that date, only Class A shares existed."},
+        {"id":"ttm_aol_time_warner","module":"ticker_time_machine","difficulty":"hard","prompt":"A researcher studies the AOL Time Warner merger announced January 10, 2000 and tracks returns for ticker TWX from 1998 through 2005. Audit this workflow.","expected_validity":"invalid","expected_violations":["issuer_security_confusion"],"expected_repair":["TWX represented Time Warner before the merger but AOL Time Warner after.","Consider whether you're tracking the acquirer, target, or combined entity."],"ground_truth_notes":"The AOL Time Warner merger was one of the largest in history. After the merger in 2001, the combined company traded under AOL/TWX."},
+        {"id":"filing_clock_10q_same_day","module":"filing_clock","difficulty":"easy","prompt":"A company files its 10-Q at 8:45 AM ET on May 5, 2022. A trading algorithm processes this filing and places a trade at 9:35 AM ET the same day. Audit this workflow.","expected_validity":"valid","expected_violations":[],"expected_repair":[],"ground_truth_notes":"The 10-Q was filed at 8:45 AM, and the trade occurs at 9:35 AM, 50 minutes after the filing. The filing was publicly available. Valid."},
+        {"id":"filing_clock_8k_5pm","module":"filing_clock","difficulty":"easy","prompt":"An 8-K announcing material news is accepted by EDGAR at 5:15 PM ET on Tuesday, March 14, 2023. A trading strategy uses this news to trade at 9:30 AM ET on Wednesday, March 15, 2023. Audit this workflow.","expected_validity":"valid","expected_violations":[],"expected_repair":[],"ground_truth_notes":"The 8-K was filed after market close on Tuesday. Trading at Wednesday's open gives adequate time for the information to be processed. Valid."},
+        {"id":"filing_clock_press_release_before_filing","module":"filing_clock","difficulty":"medium","prompt":"A company issues a press release at 4:05 PM ET announcing earnings. The corresponding 8-K is filed at 4:45 PM ET. A strategy trades at 4:20 PM based on the 8-K filing content. Audit this workflow.","expected_validity":"invalid","expected_violations":["filing_clock_leakage"],"expected_repair":["The strategy cannot use the 8-K content at 4:20 PM if it was filed at 4:45 PM.","Clearly distinguish between press release timing and EDGAR filing timing."],"ground_truth_notes":"While the press release was out at 4:05 PM, the workflow claims to use the 8-K which wasn't filed until 4:45 PM."},
+        {"id":"filing_clock_amended_10k","module":"filing_clock","difficulty":"medium","prompt":"A researcher uses data from a 10-K/A (amended 10-K) filed on April 30, 2022 for a portfolio formed on March 15, 2022. The original 10-K was filed on February 28, 2022. Audit this workflow.","expected_validity":"invalid","expected_violations":["filing_clock_leakage"],"expected_repair":["Amended filing (10-K/A) data was not available until April 30, 2022.","Use the original filing for point-in-time accuracy."],"ground_truth_notes":"Amended filings contain corrections or additional information added after the original filing. Using 10-K/A data from April for a March portfolio is look-ahead bias."},
+        {"id":"filing_clock_foreign_issuer_20f","module":"filing_clock","difficulty":"hard","prompt":"A researcher uses annual financial data from Alibaba's 20-F filed on July 22, 2022 for a portfolio formed on April 15, 2022. Alibaba's fiscal year ends March 31. Audit this workflow.","expected_validity":"invalid","expected_violations":["filing_clock_leakage","accounting_availability_leakage"],"expected_repair":["Foreign private issuers file 20-F up to 4 months after fiscal year end.","Use only data from the previous year's 20-F for the April portfolio."],"ground_truth_notes":"Alibaba's fiscal year 2022 ended March 31, 2022. The 20-F with this data wasn't filed until July 22, 2022."},
+        {"id":"filing_clock_intraday_noon","module":"filing_clock","difficulty":"easy","prompt":"An 8-K is filed at 12:15 PM ET. A high-frequency strategy places a trade at 12:14 PM ET on the same day using information it claims is from that 8-K. Audit this workflow.","expected_validity":"invalid","expected_violations":["filing_clock_leakage"],"expected_repair":["Cannot use 8-K information before it is filed.","Wait for EDGAR acceptance timestamp before trading on filing content."],"ground_truth_notes":"One minute before filing acceptance, the information was not publicly available. This is a clear case of filing clock leakage."},
+        {"id":"filing_clock_timezone_confusion","module":"filing_clock","difficulty":"medium","prompt":"A company based in California files an 8-K at 3:30 PM PT (6:30 PM ET) on December 10, 2021. A strategy on the East Coast trades at 5:00 PM ET the same day, claiming the filing was already available. Audit this workflow.","expected_validity":"invalid","expected_violations":["filing_clock_leakage","timezone_error"],"expected_repair":["EDGAR timestamps are in Eastern Time.","A trade at 5:00 PM ET cannot use a filing that wasn't accepted until 6:30 PM ET."],"ground_truth_notes":"Timezone confusion between Pacific and Eastern time causes a 3-hour error."},
+        {"id":"acct_q4_earnings_january","module":"accounting_availability","difficulty":"easy","prompt":"A momentum strategy rebalances on January 2, 2023 using Q4 2022 earnings to rank stocks. Most companies have December fiscal year ends and report Q4 earnings in late January or February. Audit this workflow.","expected_validity":"invalid","expected_violations":["accounting_availability_leakage"],"expected_repair":["Q4 earnings are typically reported 4-8 weeks after quarter end.","Use Q3 2022 earnings for January rebalancing."],"ground_truth_notes":"December quarter-end earnings are typically reported in late January through early March. Using Q4 earnings on January 2 is look-ahead bias."},
+        {"id":"acct_valid_6month_lag","module":"accounting_availability","difficulty":"easy","prompt":"A value strategy forms portfolios on July 1, 2023 using fiscal year 2022 book value data. All companies in the universe have December fiscal years and filed their 10-Ks by March 31, 2023. Audit this workflow.","expected_validity":"valid","expected_violations":[],"expected_repair":[],"ground_truth_notes":"With a July 1 portfolio date and all 10-Ks filed by March 31, there is a full 3-month buffer. The data was publicly available."},
+        {"id":"acct_compustat_point_in_time","module":"accounting_availability","difficulty":"medium","prompt":"A researcher downloads Compustat annual data today and uses it to backtest a strategy from 2010-2020. The researcher uses the 'datadate' field (fiscal period end date) to determine when data was available. Audit this workflow.","expected_validity":"invalid","expected_violations":["accounting_availability_leakage"],"expected_repair":["Compustat 'datadate' is fiscal period end, not information availability.","Use 'rdq' (report date of quarterly) or compare to SEC filing dates."],"ground_truth_notes":"The 'datadate' field in Compustat represents fiscal period end date, not when the data became available."},
+        {"id":"acct_preliminary_vs_final","module":"accounting_availability","difficulty":"medium","prompt":"A company announces preliminary Q3 earnings of $1.50 EPS on October 15. The final 10-Q filed November 5 shows $1.45 EPS due to adjustments. A strategy uses $1.50 for October 20 trading. Audit this workflow.","expected_validity":"valid","expected_violations":[],"expected_repair":[],"ground_truth_notes":"Using the preliminary earnings figure that was publicly announced on October 15 for October 20 trading is valid. The preliminary number was public information."},
+        {"id":"acct_non_calendar_fiscal_year","module":"accounting_availability","difficulty":"medium","prompt":"A portfolio is formed on October 1, 2022 using fiscal year 2022 data for Apple Inc. Apple's fiscal year ends in late September. The 10-K for FY2022 was filed on October 28, 2022. Audit this workflow.","expected_validity":"invalid","expected_violations":["accounting_availability_leakage"],"expected_repair":["Apple's FY2022 ended September 24, 2022.","On October 1, use FY2021 data instead."],"ground_truth_notes":"Apple has a non-calendar fiscal year ending in late September. FY2022 data wasn't available until the 10-K filing in late October."},
+        {"id":"acct_pro_forma_gaap","module":"accounting_availability","difficulty":"hard","prompt":"A strategy uses non-GAAP 'adjusted earnings' from an 8-K filed January 15 for portfolio formation on January 10. The company issued a press release with these non-GAAP figures on January 8. Audit this workflow.","expected_validity":"invalid","expected_violations":["filing_clock_leakage"],"expected_repair":["If using data from the 8-K, cannot use before January 15 filing.","Clarify the actual data source: press release vs. 8-K."],"ground_truth_notes":"The workflow claims to use 8-K data but the 8-K wasn't filed until January 15."},
+        {"id":"acct_ma_target_financials","module":"accounting_availability","difficulty":"medium","prompt":"A researcher studies M&A returns and uses the target company's financials from their final 10-K filed 6 months before the merger announcement. The merger was announced April 1, 2022 and the 10-K was filed October 2021. Audit this workflow.","expected_validity":"valid","expected_violations":[],"expected_repair":[],"ground_truth_notes":"Using financials from a 10-K filed 6 months before the merger announcement is point-in-time valid."},
+        {"id":"survivorship_lehman_2007","module":"survivorship_delisting","difficulty":"easy","prompt":"A researcher backtests a financial sector strategy from 2005-2015 and downloads data for current financial stocks. The backtest does not include Lehman Brothers, Bear Stearns, or Washington Mutual. Audit this workflow.","expected_validity":"invalid","expected_violations":["survivorship_bias","delisting_return_omission"],"expected_repair":["Include Lehman Brothers (bankrupt 2008), Bear Stearns (acquired 2008), WaMu (seized 2008).","Use point-in-time universe for each period."],"ground_truth_notes":"Major financial institutions that failed in 2008 would have been in any 2005-2007 financial sector portfolio."},
+        {"id":"survivorship_valid_pit_universe","module":"survivorship_delisting","difficulty":"easy","prompt":"A researcher backtests from 2000-2010 using CRSP monthly data. Each month, they use the share code to identify common stocks and include all stocks with valid price data for that month. Delisting returns are included. Audit this workflow.","expected_validity":"valid","expected_violations":[],"expected_repair":[],"ground_truth_notes":"Using CRSP share codes to identify securities each month and including all valid securities regardless of future status is point-in-time correct."},
+        {"id":"survivorship_nasdaq_100","module":"survivorship_delisting","difficulty":"medium","prompt":"A researcher backtests a strategy on NASDAQ-100 stocks from 2000-2020 using the 2025 NASDAQ-100 constituents for the entire period. Audit this workflow.","expected_validity":"invalid","expected_violations":["survivorship_bias"],"expected_repair":["NASDAQ-100 composition changes quarterly.","Companies like Yahoo, Sun Microsystems were in 2000 NASDAQ-100 but not today."],"ground_truth_notes":"The NASDAQ-100 has changed dramatically since 2000. Many dot-com era companies were removed."},
+        {"id":"survivorship_delisting_code_handling","module":"survivorship_delisting","difficulty":"hard","prompt":"A backtest applies CRSP delisting returns but only includes returns for delisting codes 200-299 (mergers). It ignores delisting codes 400-499 (liquidation) and 500-599 (dropped). Audit this workflow.","expected_validity":"invalid","expected_violations":["delisting_return_omission"],"expected_repair":["Include delisting returns for all delisting types.","Codes 400-499 (liquidation) often have large negative returns."],"ground_truth_notes":"Selectively applying delisting returns only to mergers while ignoring liquidations biases results."},
+        {"id":"survivorship_penny_stock_filter","module":"survivorship_delisting","difficulty":"medium","prompt":"A researcher applies a $5 minimum price filter for a backtest from 1995-2020. The filter is applied retrospectively: if a stock ever traded below $5 during the backtest period, it is excluded from the entire backtest. Audit this workflow.","expected_validity":"invalid","expected_violations":["survivorship_bias"],"expected_repair":["Apply price filter at each rebalance date, not retrospectively.","A stock at $10 in 1995 that fell to $3 by 2000 was tradeable in 1995."],"ground_truth_notes":"Applying filters based on future price information is a form of look-ahead bias."},
+        {"id":"survivorship_spac_lifecycle","module":"survivorship_delisting","difficulty":"hard","prompt":"A researcher studies SPAC returns from 2018-2023. The study includes only SPACs that completed a merger and are still trading as of 2025. Failed SPACs that returned capital or liquidated are excluded. Audit this workflow.","expected_validity":"invalid","expected_violations":["survivorship_bias"],"expected_repair":["Include SPACs that failed to complete mergers.","Track the full SPAC lifecycle including redemptions and liquidations."],"ground_truth_notes":"Many SPACs fail to complete mergers or complete mergers that later fail. Studying only successful, surviving SPACs severely overstates SPAC returns."},
+        {"id":"survivorship_sector_etf_constituents","module":"survivorship_delisting","difficulty":"medium","prompt":"A researcher backtests a sector rotation strategy from 2010-2020 using holdings of current sector ETFs (XLF, XLK, etc.) to define sector membership throughout the backtest. Audit this workflow.","expected_validity":"invalid","expected_violations":["survivorship_bias"],"expected_repair":["ETF holdings change over time.","Account for sector reclassifications (e.g., FB moved from Tech to Communications)."],"ground_truth_notes":"Using current ETF holdings for historical backtests introduces survivorship bias."},
+        {"id":"trap_filing_5min_margin","module":"filing_clock","difficulty":"hard","prompt":"An 8-K is accepted by EDGAR at 3:55 PM ET on March 15, 2023. A trading algorithm executes a trade at 4:00 PM ET the same day using information from that 8-K. Audit this workflow.","expected_validity":"valid","expected_violations":[],"expected_repair":[],"ground_truth_notes":"The filing was accepted at 3:55 PM, and the trade occurred at 4:00 PM. The 5-minute gap is sufficient. This is valid despite the tight timing."},
+        {"id":"trap_ticker_change_day_correct","module":"ticker_time_machine","difficulty":"hard","prompt":"On June 9, 2022, Meta Platforms changed its ticker from FB to META. A researcher studies Meta's stock return on June 9, 2022 using ticker FB for the morning session data. Audit this workflow.","expected_validity":"valid","expected_violations":[],"expected_repair":[],"ground_truth_notes":"The ticker change occurred during the trading day. Using FB for morning data on June 9, 2022 is correct."},
+        {"id":"trap_fiscal_year_complex_valid","module":"accounting_availability","difficulty":"hard","prompt":"Walmart's fiscal year ends January 31. Their FY2023 10-K (ending Jan 31, 2023) was filed on March 24, 2023. A portfolio is formed on April 1, 2023 using Walmart's FY2023 net income. Audit this workflow.","expected_validity":"valid","expected_violations":[],"expected_repair":[],"ground_truth_notes":"Walmart's non-calendar fiscal year ends Jan 31. The FY2023 10-K was filed March 24, 2023. Using this data on April 1, 2023 is valid."},
+        {"id":"trap_survivorship_includes_delisted","module":"survivorship_delisting","difficulty":"hard","prompt":"A momentum backtest from 2005-2015 uses CRSP data. The researcher explicitly includes all stocks that existed during the period, including those that later delisted. However, they exclude stocks with share codes other than 10 and 11. Audit this workflow.","expected_validity":"valid","expected_violations":[],"expected_repair":[],"ground_truth_notes":"Filtering to share codes 10 and 11 (common stocks) is standard and valid. The researcher includes delisted stocks."},
+        {"id":"trap_friday_filing_monday_trade","module":"filing_clock","difficulty":"medium","prompt":"A company files an 8-K at 6:30 PM ET on Friday, January 13, 2023. A trading strategy uses this filing to trade at 9:35 AM ET on Tuesday, January 17, 2023 (Monday was MLK Day). Audit this workflow.","expected_validity":"valid","expected_violations":[],"expected_repair":[],"ground_truth_notes":"The filing was made Friday evening. Tuesday trading gives 3+ days for the information to be public. This is clearly valid."},
+        {"id":"trap_permno_across_ticker_change","module":"ticker_time_machine","difficulty":"hard","prompt":"A researcher tracks Facebook/Meta returns from 2015-2024 using CRSP PERMNO 13407. The study correctly notes that the ticker changed from FB to META in June 2022, but uses the consistent PERMNO throughout. Audit this workflow.","expected_validity":"valid","expected_violations":[],"expected_repair":[],"ground_truth_notes":"Using PERMNO to track a security across ticker changes is the correct approach. This is point-in-time valid."},
+        {"id":"subtle_share_class_brk","module":"ticker_time_machine","difficulty":"hard","prompt":"A researcher studies Berkshire Hathaway's performance from 2010-2020. They use daily returns for BRK.A but calculate market cap using shares outstanding data from BRK.B filings. Both are Berkshire Hathaway. Audit this workflow.","expected_validity":"invalid","expected_violations":["issuer_security_confusion"],"expected_repair":["Use consistent security-level data. BRK.A and BRK.B are different securities."],"ground_truth_notes":"While both BRK.A and BRK.B represent Berkshire Hathaway, they are different securities with different prices and shares outstanding."},
+        {"id":"subtle_merger_ticker_continuity","module":"ticker_time_machine","difficulty":"hard","prompt":"A researcher studies AT&T (ticker: T) returns from 1990-2010. They assume the ticker T represents the same company throughout this period. The backtest treats T as a continuous security across all years. Audit this workflow.","expected_validity":"invalid","expected_violations":["identifier_time_travel","issuer_security_confusion"],"expected_repair":["The ticker T had a discontinuity when SBC acquired AT&T Corp in 2005.","Treat pre-2005 AT&T and post-2005 AT&T (formerly SBC) as different entities."],"ground_truth_notes":"SBC Communications acquired AT&T Corp in November 2005 and adopted the AT&T name and ticker. The pre-2005 T and post-2005 T represent different companies."},
+        {"id":"hard_meta_june9_intraday","module":"ticker_time_machine","difficulty":"hard","prompt":"A researcher analyzes Meta's stock on June 9, 2022, the day the ticker changed from FB to META. They use ticker META to pull data for the full trading day. Audit this workflow.","expected_validity":"invalid","expected_violations":["identifier_time_travel"],"expected_repair":["The ticker change happened at market open; morning trades were under FB.","Use PERMNO or split by time of day."],"ground_truth_notes":"META became active at market open on June 9, 2022, but historical databases may show FB for early trades."},
+        {"id":"hard_goog_voting_class_pre2014","module":"ticker_time_machine","difficulty":"hard","prompt":"A researcher studies Google's governance and voting rights using ticker GOOGL for 2012 annual meeting data. Audit this workflow.","expected_validity":"invalid","expected_violations":["identifier_time_travel"],"expected_repair":["GOOGL (Class A voting shares) was created in April 2014.","In 2012, use GOOG (the only ticker that existed)."],"ground_truth_notes":"Google had only one ticker (GOOG) until the April 2014 stock split created GOOGL and GOOG as separate share classes."},
+        {"id":"hard_ibm_kyndryl_spinoff","module":"ticker_time_machine","difficulty":"hard","prompt":"A researcher backtests IBM from 2020-2023 treating it as a continuous security. IBM spun off Kyndryl (KD) in November 2021. The backtest uses IBM returns without accounting for the spinoff distribution. Audit this workflow.","expected_validity":"invalid","expected_violations":["issuer_security_confusion"],"expected_repair":["Account for the Kyndryl spinoff distribution to IBM shareholders.","Track both IBM and KD post-spinoff, or use total return including distributions."],"ground_truth_notes":"IBM spun off Kyndryl in November 2021. The IBM that exists after 2021 is a different business than before."},
+        {"id":"hard_sp_announcement_vs_effective","module":"survivorship_delisting","difficulty":"hard","prompt":"A researcher studies S&P 500 index addition effects. They form portfolios on the announcement date using the stock's membership status as of the effective date. Audit this workflow.","expected_validity":"invalid","expected_violations":["filing_clock_leakage"],"expected_repair":["S&P announcements precede effective dates by several days.","Membership status on effective date is not known on announcement date."],"ground_truth_notes":"S&P announces additions before they become effective. Using effective-date membership on announcement date is look-ahead bias."},
+        {"id":"hard_compustat_rdq_vs_datadate","module":"accounting_availability","difficulty":"hard","prompt":"A backtest uses Compustat quarterly data with a 45-day lag from datadate (fiscal quarter end). This lag is applied uniformly to all companies. Audit this workflow.","expected_validity":"invalid","expected_violations":["accounting_availability_leakage"],"expected_repair":["Compustat datadate is fiscal quarter end, not report date.","Some companies report 60+ days after quarter end.","Use rdq (report date) or check actual filing dates."],"ground_truth_notes":"A fixed 45-day lag from fiscal quarter end may still use data before it was actually filed."},
+        {"id":"chrono_filing_before_trade_valid","module":"filing_clock","difficulty":"medium","prompt":"A company files an 8-K at 2:00 PM on March 15, 2024. A trading strategy executes at 3:30 PM on March 15, 2024 based on that filing. Audit this workflow.","expected_validity":"valid","expected_violations":[],"expected_repair":[],"ground_truth_notes":"The filing was at 2:00 PM and the trade at 3:30 PM. The information was available for 90 minutes before the trade."},
+        {"id":"chrono_trade_before_filing_invalid","module":"filing_clock","difficulty":"easy","prompt":"A company files an 8-K at 4:30 PM on March 15, 2024. A trading strategy executed at 2:00 PM on March 15, 2024 claims to use information from that 8-K. Audit this workflow.","expected_validity":"invalid","expected_violations":["filing_clock_leakage"],"expected_repair":["Cannot use information from a filing that hasn't happened yet.","The trade at 2:00 PM cannot be based on a 4:30 PM filing."],"ground_truth_notes":"Simple chronology: 2:00 PM < 4:30 PM. The trade happened before the filing."},
+        {"id":"chrono_intraday_15min_before","module":"filing_clock","difficulty":"medium","prompt":"An earnings release is filed at 4:15 PM ET. A trader places an order at 4:00 PM ET based on the earnings numbers. Audit this workflow.","expected_validity":"invalid","expected_violations":["filing_clock_leakage"],"expected_repair":["4:00 PM is before 4:15 PM.","Cannot trade on information not yet public."],"ground_truth_notes":"15 minutes before the filing, the information was not available."},
+        {"id":"chrono_intraday_5min_after_valid","module":"filing_clock","difficulty":"medium","prompt":"An 8-K is filed at 10:00 AM ET. A trader executes at 10:05 AM ET using information from that 8-K. Audit this workflow.","expected_validity":"valid","expected_violations":[],"expected_repair":[],"ground_truth_notes":"10:05 AM is after 10:00 AM. The 5-minute gap is sufficient for the information to be public."},
+        {"id":"chrono_ticker_before_existence","module":"ticker_time_machine","difficulty":"easy","prompt":"A researcher queries returns for ticker TSLA in January 2008. Tesla's IPO was in June 2010. Audit this workflow.","expected_validity":"invalid","expected_violations":["identifier_time_travel"],"expected_repair":["TSLA did not exist in January 2008.","Tesla went public in June 2010."],"ground_truth_notes":"Simple chronology: January 2008 < June 2010. Cannot use a ticker before the company went public."},
+        {"id":"chrono_cross_midnight_invalid","module":"filing_clock","difficulty":"hard","prompt":"A company files an 8-K at 12:30 AM ET on March 16, 2024. A strategy trades at 11:45 PM ET on March 15, 2024 using that filing's information. Audit this workflow.","expected_validity":"invalid","expected_violations":["filing_clock_leakage"],"expected_repair":["March 15 11:45 PM is before March 16 12:30 AM.","The filing hadn't happened yet."],"ground_truth_notes":"The trade on March 15 at 11:45 PM is before the filing on March 16 at 12:30 AM, even though they're only 45 minutes apart."},
+        {"id":"chrono_year_boundary_invalid","module":"accounting_availability","difficulty":"medium","prompt":"A portfolio is formed on December 28, 2023 using Q4 2023 earnings. The company's Q4 ends December 31, 2023. Audit this workflow.","expected_validity":"invalid","expected_violations":["accounting_availability_leakage"],"expected_repair":["December 28 < December 31.","Q4 2023 hasn't even ended yet.","Cannot use earnings from a quarter that hasn't finished."],"ground_truth_notes":"The portfolio is formed before the quarter even ends, let alone before earnings are reported."},
+        {"id":"chrono_same_minute_valid","module":"filing_clock","difficulty":"hard","prompt":"An 8-K is accepted at 2:30:00 PM ET (exactly on the minute). A trade executes at 2:30:45 PM ET (45 seconds later). Audit this workflow.","expected_validity":"valid","expected_violations":[],"expected_repair":[],"ground_truth_notes":"2:30:45 is after 2:30:00. Even 45 seconds is technically after the filing. The information was available."},
+        {"id":"chrono_misleading_after_invalid","module":"filing_clock","difficulty":"hard","prompt":"A researcher studies market reactions after Apple's earnings announcement. They form a portfolio on January 25, 2024 to capture the post-announcement drift. Apple announced Q1 FY2024 earnings on February 1, 2024. Audit this workflow.","expected_validity":"invalid","expected_violations":["filing_clock_leakage"],"expected_repair":["The portfolio was formed January 25, but the announcement was February 1.","Cannot study 'post-announcement' effects before the announcement happens."],"ground_truth_notes":"The language says 'after the announcement' but the dates show January 25 < February 1. The portfolio was formed before the announcement."},
+        {"id":"chrono_misleading_before_valid","module":"filing_clock","difficulty":"hard","prompt":"A researcher studies pre-announcement price drift before Tesla's earnings. They analyze trading patterns ending January 20, 2024. Tesla announced earnings on January 24, 2024. Audit this workflow.","expected_validity":"valid","expected_violations":[],"expected_repair":[],"ground_truth_notes":"January 20 is indeed before January 24. The analysis period ends before the announcement, which is correct for studying pre-announcement patterns."},
+        {"id":"chrono_wrong_year_invalid","module":"ticker_time_machine","difficulty":"medium","prompt":"A researcher studies Facebook's 2022 Q4 earnings using ticker FB. The ticker changed to META in June 2022. Audit this workflow.","expected_validity":"invalid","expected_violations":["identifier_time_travel"],"expected_repair":["FB ceased to exist after June 2022.","2022 Q4 (October-December) is after June 2022.","Use META for Q4 2022."],"ground_truth_notes":"The researcher is using FB for a period after it became META. Q4 2022 is October-December, which is after the June 2022 ticker change."},
+        {"id":"chrono_large_gap_valid","module":"accounting_availability","difficulty":"easy","prompt":"A portfolio is formed on January 15, 2024 using fiscal year 2022 data. The company's FY2022 10-K was filed in March 2023. Audit this workflow.","expected_validity":"valid","expected_violations":[],"expected_repair":[],"ground_truth_notes":"March 2023 < January 2024. The data was available for about 10 months before the portfolio formation."},
+        {"id":"chrono_timezone_trick_invalid","module":"filing_clock","difficulty":"hard","prompt":"A filing is made at 6:00 PM Eastern Time on March 15. A trader in California executes at 2:30 PM Pacific Time on March 15 (which is 5:30 PM Eastern). Audit this workflow.","expected_validity":"invalid","expected_violations":["filing_clock_leakage"],"expected_repair":["5:30 PM ET is before 6:00 PM ET.","The trade happened before the filing regardless of timezone representation."],"ground_truth_notes":"Converting to the same timezone: 2:30 PM PT = 5:30 PM ET, which is before 6:00 PM ET."},
+        {"id":"chrono_confident_wrong_invalid","module":"accounting_availability","difficulty":"hard","prompt":"The researcher confidently states they use a 6-month lag for all accounting data to ensure availability. They form a January 2024 portfolio using Q3 2023 data (quarter ending September 30, 2023). The Q3 10-Q was filed November 15, 2023. Audit this workflow.","expected_validity":"valid","expected_violations":[],"expected_repair":[],"ground_truth_notes":"The Q3 10-Q was filed November 15, 2023. January 2024 is about 6 weeks after that. The data was publicly available."},
+        {"id":"code_datadate_not_rdq","module":"accounting_availability","difficulty":"hard","prompt":"Audit this Python code for point-in-time validity:\n\n```python\nimport pandas as pd\n\ndef build_value_portfolio(compustat_df, portfolio_date):\n    cutoff = portfolio_date - pd.DateOffset(months=6)\n    available = compustat_df[compustat_df['datadate'] <= cutoff].copy()\n    available = available.sort_values('datadate').groupby('gvkey').tail(1)\n    available['bm'] = available['ceq'] / available['mktcap']\n    threshold = available['bm'].quantile(0.67)\n    value_stocks = available[available['bm'] >= threshold]\n    return value_stocks['gvkey'].tolist()\n```","expected_validity":"invalid","expected_violations":["accounting_availability_leakage"],"expected_repair":["Use 'rdq' (report date) instead of 'datadate' for availability check.","datadate is fiscal period end, not when data became available."],"ground_truth_notes":"The code uses 'datadate' which is fiscal period end, not data availability. For a December FYE company, datadate=Dec 31 but rdq might be Feb 28."},
+        {"id":"code_comment_lies_lag","module":"accounting_availability","difficulty":"medium","prompt":"Audit this Python code:\n\n```python\ndef get_fundamentals(df, as_of_date):\n    \"\"\"Get fundamentals with 6-month lag for point-in-time validity.\"\"\"\n    lag_months = 3\n    cutoff = as_of_date - pd.DateOffset(months=lag_months)\n    return df[df['filing_date'] <= cutoff]\n```","expected_validity":"invalid","expected_violations":["accounting_availability_leakage"],"expected_repair":["The docstring says 6-month lag but code uses 3-month lag.","Either fix the code to use 6 months or update the documentation."],"ground_truth_notes":"The docstring promises a 6-month lag but the code implements only 3 months. This is a comment/code mismatch bug."},
+        {"id":"code_correct_dlret_valid","module":"survivorship_delisting","difficulty":"hard","prompt":"Audit this Python code:\n\n```python\ndef calculate_return_with_delisting(row):\n    ret = row['ret']\n    dlret = row['dlret']\n    if pd.notna(dlret):\n        if pd.notna(ret):\n            total_ret = (1 + ret) * (1 + dlret) - 1\n        else:\n            total_ret = dlret\n    else:\n        total_ret = ret\n    return total_ret\n```","expected_validity":"valid","expected_violations":[],"expected_repair":[],"ground_truth_notes":"This correctly implements the CRSP delisting return compounding formula. When both ret and dlret exist, they should be compounded."},
+        {"id":"code_merge_leaks_future","module":"accounting_availability","difficulty":"medium","prompt":"Audit this Python code:\n\n```python\ndef merge_price_and_fundamentals(prices_df, fund_df, trade_date):\n    prices_today = prices_df[prices_df['date'] == trade_date]\n    merged = prices_today.merge(fund_df, on='permno', how='left')\n    return merged\n```","expected_validity":"invalid","expected_violations":["accounting_availability_leakage"],"expected_repair":["The fundamentals merge has no date filter.","Fund_df may contain data filed after trade_date.","Add: fund_df[fund_df['filing_date'] <= trade_date]"],"ground_truth_notes":"The code merges all fundamentals without filtering by date. This can include fundamentals not yet filed on trade_date."},
+        {"id":"code_shift_off_by_one","module":"accounting_availability","difficulty":"hard","prompt":"Audit this Python code:\n\n```python\ndef calculate_earnings_surprise(df):\n    \"\"\"Calculate surprise as actual minus forecast from prior quarter.\"\"\"\n    df = df.sort_values(['permno', 'rdq'])\n    df['prior_forecast'] = df.groupby('permno')['analyst_forecast'].shift(1)\n    df['surprise'] = df['actual_eps'] - df['prior_forecast']\n    return df\n```","expected_validity":"invalid","expected_violations":["accounting_availability_leakage"],"expected_repair":["shift(1) gets the prior row, but forecasts for Q2 are made during Q2, not Q1.","The forecast for current quarter should be compared to actual.","This is an off-by-one error in the shift logic."],"ground_truth_notes":"Earnings surprise should compare actual to forecast for the SAME quarter, not prior quarter's forecast."},
+        {"id":"code_correct_pit_compustat_valid","module":"accounting_availability","difficulty":"hard","prompt":"Audit this Python code:\n\n```python\ndef get_pit_fundamentals(compustat_pit, as_of_date):\n    \"\"\"Get point-in-time Compustat data as it would have appeared on as_of_date.\"\"\"\n    snapshot = compustat_pit[compustat_pit['snapshot_date'] <= as_of_date]\n    latest = snapshot.sort_values('snapshot_date').groupby('gvkey').tail(1)\n    return latest\n```","expected_validity":"valid","expected_violations":[],"expected_repair":[],"ground_truth_notes":"This correctly uses Compustat point-in-time snapshots. Filtering by snapshot_date <= as_of_date and taking the latest is the correct approach."},
+        {"id":"code_current_sp500_historical","module":"survivorship_delisting","difficulty":"medium","prompt":"Audit this Python code:\n\n```python\nSP500_TICKERS = ['AAPL', 'MSFT', 'GOOGL', ...]  # Current S&P 500 list\n\ndef backtest_sp500_strategy(start_date, end_date):\n    returns = get_returns(SP500_TICKERS, start_date, end_date)\n    return calculate_strategy_returns(returns)\n```","expected_validity":"invalid","expected_violations":["survivorship_bias"],"expected_repair":["Using current S&P 500 constituents for historical backtest.","Must use historical constituent lists for each period.","Companies like Lehman, Enron were in S&P 500 historically."],"ground_truth_notes":"The code uses a hardcoded current S&P 500 list for historical backtest, introducing survivorship bias."},
+        {"id":"code_adjusted_price_filter","module":"ticker_time_machine","difficulty":"hard","prompt":"Audit this Python code:\n\n```python\ndef filter_penny_stocks(df):\n    \"\"\"Remove stocks trading below $5.\"\"\"\n    return df[df['prc_adj'] >= 5]\n```","expected_validity":"invalid","expected_violations":["identifier_time_travel"],"expected_repair":["Using adjusted prices for price-level filter is wrong.","A stock at $50 that later split 10:1 shows as $5 adjusted.","Use raw/unadjusted prices for price filters."],"ground_truth_notes":"Split-adjusted prices should not be used for price-level filters. Use raw prices instead."},
+        {"id":"code_misleading_varname_valid","module":"accounting_availability","difficulty":"hard","prompt":"Audit this Python code:\n\n```python\ndef get_forward_pe(df, as_of_date):\n    \"\"\"Calculate forward P/E using analyst forecasts available as of date.\"\"\"\n    available = df[df['forecast_date'] <= as_of_date]\n    latest = available.sort_values('forecast_date').groupby('permno').tail(1)\n    latest['future_eps'] = latest['eps_forecast']  # Forecast for next year\n    latest['forward_pe'] = latest['price'] / latest['future_eps'].shift(0)\n    return latest\n```","expected_validity":"valid","expected_violations":[],"expected_repair":[],"ground_truth_notes":"Despite the suspicious variable name 'future_eps', this is using forecasts available as of the date. The shift(0) is a no-op. This is valid."},
+        {"id":"code_professional_but_wrong","module":"filing_clock","difficulty":"hard","prompt":"Audit this Python code:\n\n```python\ndef get_8k_filing_data(cik, filing_date):\n    \"\"\"\n    Retrieve 8-K filing data with proper point-in-time handling.\n    Uses SEC EDGAR API with filing date filter.\n    \"\"\"\n    url = f\"https://data.sec.gov/submissions/CIK{cik}.json\"\n    filings = requests.get(url).json()['filings']['recent']\n    mask = filings['filingDate'] <= filing_date\n    return filings[mask]\n```","expected_validity":"invalid","expected_violations":["filing_clock_leakage"],"expected_repair":["Uses 'filingDate' but should use 'acceptanceDateTime'.","filingDate is the date shown, acceptanceDateTime is when it became public.","A filing dated March 15 might be accepted at 5:30 PM that day."],"ground_truth_notes":"The code has professional documentation but uses filingDate instead of acceptanceDateTime, which can cause intraday timing issues."},
+        {"id":"code_correct_adj_return_valid","module":"ticker_time_machine","difficulty":"medium","prompt":"Audit this Python code:\n\n```python\ndef calculate_returns(df):\n    \"\"\"Calculate returns using split-adjusted prices.\"\"\"\n    df = df.sort_values(['permno', 'date'])\n    df['ret'] = df.groupby('permno')['prc_adj'].pct_change()\n    return df\n```","expected_validity":"valid","expected_violations":[],"expected_repair":[],"ground_truth_notes":"Using split-adjusted prices for RETURN calculation is correct. This handles splits properly. The issue is only when using adjusted prices for price-LEVEL filters."},
+        {"id":"code_current_industry_codes","module":"survivorship_delisting","difficulty":"medium","prompt":"Audit this Python code:\n\n```python\nINDUSTRY_MAP = get_current_gics_mapping()  # 2026 GICS codes\n\ndef backtest_sector_strategy(returns_df, start='2000-01-01', end='2020-12-31'):\n    returns_df['sector'] = returns_df['permno'].map(INDUSTRY_MAP)\n    return calculate_sector_returns(returns_df)\n```","expected_validity":"invalid","expected_violations":["survivorship_bias"],"expected_repair":["Using current (2026) GICS codes for 2000-2020 backtest.","GICS codes change over time (e.g., Facebook moved sectors in 2018).","Use historical industry classifications."],"ground_truth_notes":"Industry classifications change. Using 2026 GICS codes for a 2000-2020 backtest applies future information."}
+    ];
+
+    // Module display names
+    const MODULE_NAMES = {
+        'ticker_time_machine': 'Ticker Time Machine',
+        'filing_clock': 'Filing Clock',
+        'accounting_availability': 'Accounting Availability',
+        'survivorship_delisting': 'Survivorship & Delisting'
+    };
+
+    // State
+    let casesVisible = false;
+
+    // Initialize the explorer
+    function initExplorer() {
+        // Event listeners for filters
+        document.getElementById('case-search').addEventListener('input', onFilterChange);
+        document.getElementById('filter-module').addEventListener('change', onFilterChange);
+        document.getElementById('filter-validity').addEventListener('change', onFilterChange);
+        document.getElementById('filter-difficulty').addEventListener('change', onFilterChange);
+        
+        // Show cases button
+        document.getElementById('show-cases-btn').addEventListener('click', showCases);
+        
+        // Modal close
+        document.querySelector('.modal-close').addEventListener('click', closeModal);
+        document.getElementById('case-modal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeModal();
+        });
+        
+        // Initial state
+        updateButtonState();
+    }
+
+    function hasActiveFilter() {
+        const module = document.getElementById('filter-module').value;
+        const validity = document.getElementById('filter-validity').value;
+        const difficulty = document.getElementById('filter-difficulty').value;
+        const search = document.getElementById('case-search').value;
+        return module !== '' || validity !== '' || difficulty !== '' || search.length > 0;
+    }
+
+    function onFilterChange() {
+        updateButtonState();
+        if (casesVisible) {
+            filterAndRenderCases();
+        }
+    }
+
+    function updateButtonState() {
+        const btn = document.getElementById('show-cases-btn');
+        const hasFilter = hasActiveFilter();
+        btn.disabled = !hasFilter;
+        
+        if (casesVisible) {
+            btn.style.display = 'none';
+        } else if (hasFilter) {
+            const count = getFilteredCases().length;
+            btn.textContent = `Show ${count} matching cases`;
+            btn.style.display = 'block';
+        } else {
+            btn.textContent = 'Select filters above to browse cases';
+            btn.style.display = 'block';
+        }
+    }
+
+    function getFilteredCases() {
+        const search = document.getElementById('case-search').value.toLowerCase();
+        const module = document.getElementById('filter-module').value;
+        const validity = document.getElementById('filter-validity').value;
+        const difficulty = document.getElementById('filter-difficulty').value;
+        
+        return BENCHMARK_CASES.filter(c => {
+            if (module && module !== 'all' && c.module !== module) return false;
+            if (validity && validity !== 'all' && c.expected_validity !== validity) return false;
+            if (difficulty && difficulty !== 'all' && c.difficulty !== difficulty) return false;
+            if (search && !c.prompt.toLowerCase().includes(search) && !c.id.toLowerCase().includes(search)) return false;
+            return true;
+        });
+    }
+
+    function showCases() {
+        casesVisible = true;
+        document.getElementById('case-placeholder').style.display = 'none';
+        document.getElementById('case-list').style.display = 'grid';
+        document.getElementById('case-count-display').style.display = 'block';
+        document.getElementById('show-cases-btn').style.display = 'none';
+        filterAndRenderCases();
+    }
+
+    function filterAndRenderCases() {
+        const filtered = getFilteredCases();
+        renderCases(filtered);
+        updateCounts(filtered.length);
+    }
+
+    function renderCases(cases) {
+        const container = document.getElementById('case-list');
+        if (cases.length === 0) {
+            container.innerHTML = '<div class="explorer-placeholder"><p>No cases match your filters. Try adjusting your search.</p></div>';
+            return;
+        }
+        container.innerHTML = cases.map(c => `
+            <div class="case-card" onclick="showCase('${c.id}')">
+                <div class="case-card-header">
+                    <span class="case-id">${c.id}</span>
+                    <div class="case-badges">
+                        <span class="badge badge-${c.expected_validity}">${c.expected_validity}</span>
+                        <span class="badge badge-${c.difficulty}">${c.difficulty}</span>
+                    </div>
+                </div>
+                <div class="case-prompt">${escapeHtml(c.prompt)}</div>
+                <div class="case-module">${MODULE_NAMES[c.module] || c.module}</div>
+            </div>
+        `).join('');
+    }
+
+    function updateCounts(visible) {
+        document.getElementById('visible-count').textContent = visible;
+    }
+
+    function showCase(id) {
+        const c = BENCHMARK_CASES.find(x => x.id === id);
+        if (!c) return;
+        
+        const violationsHtml = c.expected_violations.length > 0 
+            ? c.expected_violations.map(v => `<span class="violation-tag">${v}</span>`).join('')
+            : '<span style="color:#718096">None</span>';
+        
+        const repairHtml = c.expected_repair.length > 0
+            ? `<ul class="repair-list">${c.expected_repair.map(r => `<li>${escapeHtml(r)}</li>`).join('')}</ul>`
+            : '<span style="color:#718096">None needed</span>';
+        
+        document.getElementById('modal-body').innerHTML = `
+            <h3>${c.id}</h3>
+            <div class="case-badges" style="margin-bottom:20px">
+                <span class="badge badge-${c.expected_validity}">${c.expected_validity}</span>
+                <span class="badge badge-${c.difficulty}">${c.difficulty}</span>
+            </div>
+            
+            <div class="detail-section">
+                <div class="detail-label">Module</div>
+                <div class="detail-value">${MODULE_NAMES[c.module] || c.module}</div>
+            </div>
+            
+            <div class="detail-section">
+                <div class="detail-label">Prompt</div>
+                <div class="prompt-text">${escapeHtml(c.prompt)}</div>
+            </div>
+            
+            <div class="detail-section">
+                <div class="detail-label">Expected Violations</div>
+                <div class="violations-list">${violationsHtml}</div>
+            </div>
+            
+            <div class="detail-section">
+                <div class="detail-label">Expected Repair</div>
+                <div class="detail-value">${repairHtml}</div>
+            </div>
+            
+            <div class="detail-section">
+                <div class="detail-label">Ground Truth Notes</div>
+                <div class="detail-value">${escapeHtml(c.ground_truth_notes)}</div>
+            </div>
+        `;
+        
+        document.getElementById('case-modal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('case-modal').style.display = 'none';
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', initExplorer);
+    </script>
 </body>
 </html>
