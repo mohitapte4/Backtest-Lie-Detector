@@ -18,7 +18,9 @@ Large Language Models are increasingly used to write, review, and audit trading 
 - **GPT-4o (Generic):** 83.0% accuracy, 4.7% false valid rate
 - **GPT-4o (Specialized):** 80.9% accuracy, **0.0% false valid rate**
 - **Claude Sonnet:** 78.0% accuracy, 1.2% false valid rate
-- **On 16 subtle false-valid-trap cases:** Generic missed 3, Specialized/Claude missed 0
+- **GPT-4o-mini (Generic):** 64.5% accuracy, **0.0% false valid rate**, 95.1% false invalid rate
+- **GPT-4o-mini (Specialized):** 62.4% accuracy, **0.0% false valid rate**, 97.6% false invalid rate
+- **On 16 subtle false-valid-trap cases:** GPT-4o Generic missed 3; all other models missed 0
 
 ---
 
@@ -294,6 +296,8 @@ We designed 16 new cases that sound professional and valid but contain subtle im
 |-------|--------------|--------------|--------------|
 | Claude Sonnet | **100%** | 0/16 | None |
 | GPT-4o (Specialized) | **93.8%** | 0/16 | None (1 flagged ambiguous) |
+| GPT-4o-mini (Generic) | **100%** | 0/16 | None |
+| GPT-4o-mini (Specialized) | **100%** | 0/16 | None |
 | GPT-4o (Generic) | 81.2% | **3/16** | 3 subtle bugs missed |
 
 ### Cases GPT-4o Generic Missed
@@ -320,6 +324,8 @@ We designed 16 new cases that sound professional and valid but contain subtle im
 | GPT-4o (Generic) | 1.4% | **4.7%** | **+3.2%** |
 | GPT-4o (Specialized) | 0.0% | **0.0%** | 0.0% |
 | Claude Sonnet | 1.4% | 1.2% | -0.2% |
+| GPT-4o-mini (Generic) | N/A | **0.0%** | — |
+| GPT-4o-mini (Specialized) | N/A | **0.0%** | — |
 
 The false valid trap cases increased the generic prompt's false valid rate from 1.4% to 4.7%, while the specialized prompt maintained perfect safety.
 
@@ -335,9 +341,39 @@ The false valid trap cases increased the generic prompt's false valid rate from 
 
 ---
 
+## GPT-4o-mini Results: Scale vs. Safety Trade-off
+
+We ran GPT-4o-mini on the full V5 benchmark (141 cases) with both prompt configurations to test whether a smaller, cheaper model could perform comparably.
+
+### Overall Metrics
+
+| Configuration | Accuracy | False Invalid | False Valid | Ambiguous Acc |
+|---------------|----------|---------------|-------------|---------------|
+| GPT-4o-mini (Generic) | 64.5% | **95.1%** | **0.0%** | 21.4% |
+| GPT-4o-mini (Specialized) | 62.4% | **97.6%** | **0.0%** | 7.1% |
+
+### Key Finding: Extreme Overcaution, Perfect Safety
+
+GPT-4o-mini never approves a genuinely invalid workflow (0% false valid rate) and catches all 16 subtle false-valid-trap cases. However, it flags nearly every valid workflow as problematic (95–98% false invalid rate), making it impractical for real auditing use.
+
+**Interpretation:** The smaller model appears to have learned a conservative heuristic — "financial research is often flawed, flag everything" — rather than the nuanced temporal reasoning needed to distinguish real violations from correct methodology. It is safe but not useful.
+
+### Comparison to GPT-4o
+
+| Metric | GPT-4o (Generic) | GPT-4o-mini (Generic) |
+|--------|-----------------|----------------------|
+| Accuracy | 83.0% | 64.5% |
+| False Invalid | 19.5% | 95.1% |
+| False Valid | 4.7% | 0.0% |
+| Trap Accuracy | 81.2% | 100% |
+
+The gap in false invalid rate (19.5% vs 95.1%) shows that GPT-4o-mini's lower accuracy comes almost entirely from overcaution, not from missing real violations. GPT-4o-mini is actually *safer* on subtle violations but dramatically less calibrated on valid cases.
+
+---
+
 ## Limitations
 
-1. **Two models tested** - GPT-4o and Claude Sonnet; more models would strengthen conclusions
+1. **Three models tested** - GPT-4o, Claude Sonnet, and GPT-4o-mini; further models would strengthen conclusions
 2. **Two prompt variants** - More prompt engineering could yield better results
 3. **Ground truth requires domain expertise** - Some trap valid cases have debatable answers (see protocol above)
 4. **Benchmark size** - 141 cases covers main patterns but not exhaustively
