@@ -19,7 +19,8 @@ and incorrect use of delisting or corporate-action data.
 | `scripts/legacy/` | Older V1-V4 analysis/figure scripts kept for version history, not the main reproduction path. |
 | `outputs/results/` | Committed latest result files and aggregate summaries. Live reruns also write here. |
 | `outputs/figures/` | Committed latest generated figures. |
-| `writeup/` and `docs/` | Project writeup and GitHub Pages build. |
+| `writeup/` | Human-facing project writeups and supporting analysis notes. |
+| `docs/` | GitHub Pages build assets. |
 | `tests/` | Unit tests for schemas, scoring, and point-in-time validators. |
 
 ## Benchmark version history
@@ -139,7 +140,7 @@ python -m backtest_lie_detector.evals.run_eval \
 - **Claude and prompting analysis:** `scripts/reproduction/run_claude_prompting_comparison.py`,
   `scripts/reproduction/run_prompting_comparison.py`,
   `scripts/reproduction/compute_all_metrics.py`, and
-  `docs/prompting_and_claude_evaluation.md`.
+  `writeup/prompting_and_claude_evaluation.md`.
 - **AA-Omniscience comparison:** `scripts/reproduction/run_aa_omniscience.py`,
   `data/aa_omniscience/AA_Omniscience_finance.csv`, and
   `writeup/AAOmniscience_results.md`.
