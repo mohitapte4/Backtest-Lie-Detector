@@ -10,14 +10,19 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
-import numpy as np
-import matplotlib.pyplot as plt
 import jsonlines
+import matplotlib.pyplot as plt
+import numpy as np
 
 from backtest_lie_detector.benchmark.build_cases import load_benchmark
 from backtest_lie_detector.benchmark.code_cases import CODE_CASES
-from backtest_lie_detector.schemas import BenchmarkCase, ScoredResponse, Validity, Module, Difficulty
 from backtest_lie_detector.evals.scoring import aggregate_scores, compute_calibration_metrics
+from backtest_lie_detector.schemas import (
+    BenchmarkCase,
+    Difficulty,
+    Module,
+    ScoredResponse,
+)
 
 
 def load_results(filepath: str) -> list[ScoredResponse]:

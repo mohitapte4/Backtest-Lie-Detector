@@ -28,24 +28,22 @@ Output files:
     outputs/results/aa_omniscience_claude_sonnet.jsonl
 """
 
+import csv
 import os
 import sys
-import json
 import time
-import csv
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
+
+import jsonlines
+from dotenv import load_dotenv
 
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
-from dotenv import load_dotenv
-import jsonlines
+from backtest_lie_detector.evals.model_clients import AnthropicClient, OpenAIClient  # noqa: E402
+from backtest_lie_detector.evals.prompts import SYSTEM_PROMPT_FINANCE_AUDITOR  # noqa: E402
 
 load_dotenv()
-
-from backtest_lie_detector.evals.model_clients import OpenAIClient, AnthropicClient
-from backtest_lie_detector.evals.prompts import SYSTEM_PROMPT_FINANCE_AUDITOR
-
 
 # =============================================================================
 # Prompt construction

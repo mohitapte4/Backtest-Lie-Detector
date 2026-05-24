@@ -5,8 +5,8 @@ Loads GPT-4o and Claude results for V5 and V6-only benchmarks,
 producing breakdowns by module, difficulty, and case tags.
 """
 
-import sys
 import io
+import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent / "src"))
@@ -15,23 +15,43 @@ import jsonlines
 
 from backtest_lie_detector.benchmark.build_cases import load_benchmark
 from backtest_lie_detector.benchmark.code_cases import CODE_CASES
+from backtest_lie_detector.evals.scoring import aggregate_scores, compute_calibration_metrics
 from backtest_lie_detector.schemas import (
     BenchmarkCase,
-    ScoredResponse,
-    Validity,
-    Module,
     Difficulty,
+    Module,
+    ScoredResponse,
 )
-from backtest_lie_detector.evals.scoring import aggregate_scores, compute_calibration_metrics
+
+SCORED_RESPONSE_REQUIRED_FIELDS = {
+    "case_id",
+    "model_name",
+    "raw_response",
+    "parse_success",
+    "validity_correct",
+    "violation_precision",
+    "violation_recall",
+    "violation_f1",
+    "severity_weighted_recall",
+    "repair_score",
+}
 
 
 def load_results(filepath: str) -> list[ScoredResponse]:
-    """Load results from jsonl file."""
+    """Load BLD ScoredResponse results from a JSONL file.
+
+    The results directory can also contain outputs from adjacent experiments
+    (for example AA-Omniscience) with their own schema. Those files are not
+    inputs to this BLD aggregate report, so skip them instead of failing during
+    auto-discovery.
+    """
     results = []
     if not Path(filepath).exists():
         return results
     with jsonlines.open(filepath) as reader:
         for record in reader:
+            if not SCORED_RESPONSE_REQUIRED_FIELDS.issubset(record):
+                return []
             results.append(ScoredResponse.model_validate(record))
     return results
 
@@ -111,7 +131,6 @@ def compute_difficulty_breakdown(results: list[ScoredResponse], cases) -> dict:
 
 def compute_tag_breakdown(results: list[ScoredResponse], cases, tags: list[str]) -> dict:
     """Compute accuracy for specific case tags."""
-    case_map = {c.id: c for c in cases}
     breakdown = {}
 
     for tag in tags:
