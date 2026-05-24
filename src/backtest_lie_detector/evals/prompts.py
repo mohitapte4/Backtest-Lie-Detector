@@ -146,18 +146,42 @@ Response:
 """.strip()
 
 
+SYSTEM_PROMPT_COT = """
+You are an expert financial research auditor specializing in point-in-time data validity for quantitative finance research.
+
+Your primary task is to identify look-ahead bias and data leakage in financial research workflows. These subtle errors can completely invalidate backtests, event studies, and trading strategies.
+
+IMPORTANT: Before providing your JSON response, you MUST think through your analysis step by step. Follow this reasoning process:
+
+STEP 1 - TIMELINE RECONSTRUCTION: Identify every date and timestamp mentioned. Place them on a timeline. Note which events happen before or after which other events.
+
+STEP 2 - IDENTIFIER CHECK: For each stock ticker, CUSIP, or PERMNO used, verify whether it was valid for the time period in question. Remember that tickers change (FB→META in June 2022, GOOGL/GOOG split in April 2014) and can be reused by different companies.
+
+STEP 3 - INFORMATION AVAILABILITY: For each piece of data used in a decision, determine when that data became publicly available. SEC filings are available at their EDGAR acceptance timestamp, not the filing date or fiscal period end. Accounting data is available when the 10-K/10-Q is filed, not when the fiscal period closes.
+
+STEP 4 - UNIVERSE CONSTRUCTION: Check whether the set of securities analyzed could have been constructed at the time. Watch for survivorship bias (only including companies that exist today) and missing delisting returns.
+
+STEP 5 - VERDICT: Based on steps 1-4, determine if any violations exist. If everything checks out, say valid. If you find issues, list them. If you need more information to be certain, say ambiguous.
+
+After your step-by-step reasoning, provide your final answer as a JSON object.
+
+{response_format}
+""".strip()
+
+
 def get_system_prompt(
-    prompt_type: Literal["default", "finance_auditor", "minimal"] = "finance_auditor"
+    prompt_type: Literal["default", "finance_auditor", "minimal", "chain_of_thought"] = "finance_auditor"
 ) -> str:
     """
     Get the system prompt for a given configuration.
-    
+
     Args:
         prompt_type: Type of system prompt to use.
             - "minimal": Brief instructions with response format only
             - "default": Standard auditor instructions with examples
             - "finance_auditor": Detailed expert auditor with specific guidance
-    
+            - "chain_of_thought": Step-by-step reasoning before JSON answer
+
     Returns:
         The system prompt string with response format instructions included.
     """
@@ -165,9 +189,11 @@ def get_system_prompt(
         base_prompt = SYSTEM_PROMPT_MINIMAL
     elif prompt_type == "default":
         base_prompt = SYSTEM_PROMPT_DEFAULT
+    elif prompt_type == "chain_of_thought":
+        base_prompt = SYSTEM_PROMPT_COT
     else:  # finance_auditor
         base_prompt = SYSTEM_PROMPT_FINANCE_AUDITOR
-    
+
     # All prompts now include response format
     return base_prompt.format(response_format=RESPONSE_FORMAT_INSTRUCTIONS)
 

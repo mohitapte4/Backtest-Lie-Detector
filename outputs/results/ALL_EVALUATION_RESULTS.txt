@@ -1,0 +1,173 @@
+Loaded 141 V5 benchmark cases
+Loaded 20 V6-only cases (chronology + code)
+
+Auto-discovering result files...
+  [V5]      Haiku 4.5 / cot: 141 results (claude_haiku45_cot_v5.jsonl)
+  [V6-only] Haiku 4.5 / cot: 20 results (claude_haiku45_cot_v6only.jsonl)
+  [V5]      Haiku 4.5 / default: 141 results (claude_haiku45_default_v5.jsonl)
+  [V6-only] Haiku 4.5 / default: 20 results (claude_haiku45_default_v6only.jsonl)
+  [V5]      Haiku 4.5 / few-shot: 141 results (claude_haiku45_few_shot_v5.jsonl)
+  [V6-only] Haiku 4.5 / few-shot: 20 results (claude_haiku45_few_shot_v6only.jsonl)
+  [V5]      Haiku 4.5 / minimal: 141 results (claude_haiku45_minimal_v5.jsonl)
+  [V6-only] Haiku 4.5 / minimal: 20 results (claude_haiku45_minimal_v6only.jsonl)
+  [V5]      Haiku 4.5 / zero-shot: 141 results (claude_haiku45_zero_shot_v5.jsonl)
+  [V6-only] Haiku 4.5 / zero-shot: 20 results (claude_haiku45_zero_shot_v6only.jsonl)
+  [V5]      Sonnet 4.5 / cot: 141 results (claude_sonnet45_cot_v5.jsonl)
+  [V6-only] Sonnet 4.5 / cot: 20 results (claude_sonnet45_cot_v6only.jsonl)
+  [V5]      Sonnet 4.5 / default: 141 results (claude_sonnet45_default_v5.jsonl)
+  [V6-only] Sonnet 4.5 / default: 20 results (claude_sonnet45_default_v6only.jsonl)
+  [V5]      Sonnet 4.5 / few-shot: 141 results (claude_sonnet45_few_shot_v5.jsonl)
+  [V6-only] Sonnet 4.5 / few-shot: 20 results (claude_sonnet45_few_shot_v6only.jsonl)
+  [V5]      Sonnet 4.5 / minimal: 141 results (claude_sonnet45_minimal_v5.jsonl)
+  [V6-only] Sonnet 4.5 / minimal: 20 results (claude_sonnet45_minimal_v6only.jsonl)
+  [V5]      Sonnet 4.5 / zero-shot: 141 results (claude_sonnet45_zero_shot_v5.jsonl)
+  [V6-only] Sonnet 4.5 / zero-shot: 20 results (claude_sonnet45_zero_shot_v6only.jsonl)
+  [V5]      Sonnet 4.6 / cot: 141 results (claude_sonnet46_cot_v5.jsonl)
+  [V6-only] Sonnet 4.6 / cot: 20 results (claude_sonnet46_cot_v6only.jsonl)
+  [V5]      Sonnet 4.6 / default: 141 results (claude_sonnet46_default_v5.jsonl)
+  [V6-only] Sonnet 4.6 / default: 20 results (claude_sonnet46_default_v6only.jsonl)
+  [V5]      Sonnet 4.6 / few-shot: 141 results (claude_sonnet46_few_shot_v5.jsonl)
+  [V6-only] Sonnet 4.6 / few-shot: 20 results (claude_sonnet46_few_shot_v6only.jsonl)
+  [V5]      Sonnet 4.6 / minimal: 141 results (claude_sonnet46_minimal_v5.jsonl)
+  [V6-only] Sonnet 4.6 / minimal: 20 results (claude_sonnet46_minimal_v6only.jsonl)
+  [V5]      Sonnet 4.6 / zero-shot: 141 results (claude_sonnet46_zero_shot_v5.jsonl)
+  [V6-only] Sonnet 4.6 / zero-shot: 20 results (claude_sonnet46_zero_shot_v6only.jsonl)
+  [V6-only] GPT-4o / cot: 20 results (gpt4o_cot_v6only.jsonl)
+  [V6-only] GPT-4o / default: 20 results (gpt4o_default_v6only.jsonl)
+  [V6-only] GPT-4o / few-shot: 20 results (gpt4o_few_shot_v6only.jsonl)
+  [V6-only] GPT-4o / minimal: 20 results (gpt4o_minimal_v6only.jsonl)
+  [V6-only] GPT-4o / zero-shot: 20 results (gpt4o_zero_shot_v6only.jsonl)
+  [V5]      GPT-4o / cot: 141 results (prompting_cot.jsonl)
+  [V5]      GPT-4o / default: 141 results (prompting_default.jsonl)
+  [V5]      GPT-4o / few-shot: 141 results (prompting_few_shot.jsonl)
+  [V5]      GPT-4o / minimal: 141 results (prompting_minimal.jsonl)
+  [V5]      GPT-4o / zero-shot: 141 results (prompting_zero_shot.jsonl)
+
+==========================================================================================
+V5 BENCHMARK — OVERALL METRICS (141 cases)
+==========================================================================================
+
+Model / Strategy                        Acc   Parse   F.Inv   F.Val      F1  Repair
+--------------------------------------------------------------------------------
+Haiku 4.5 / cot                       70.9%  100.0%   22.0%    3.5%   52.4%   65.6%
+Haiku 4.5 / default                   78.0%  100.0%   29.3%    3.5%   53.6%   68.5%
+Haiku 4.5 / few-shot                  74.5%  100.0%   24.4%    1.2%   58.1%   71.9%
+Haiku 4.5 / minimal                   72.3%  100.0%   58.5%    1.2%   42.5%   65.6%
+Haiku 4.5 / zero-shot                 74.5%  100.0%   41.5%    1.2%   51.8%   69.4%
+Sonnet 4.5 / cot                      79.1%   95.0%   25.0%    1.2%   57.9%   72.3%
+Sonnet 4.5 / default                  82.3%  100.0%   31.7%    1.2%   61.7%   74.7%
+Sonnet 4.5 / few-shot                 81.6%  100.0%   34.1%    1.2%   64.4%   72.9%
+Sonnet 4.5 / minimal                  76.6%  100.0%   51.2%    0.0%   53.3%   74.1%
+Sonnet 4.5 / zero-shot                77.3%  100.0%   43.9%    1.2%   56.8%   74.3%
+Sonnet 4.6 / cot                      78.7%  100.0%   12.2%    1.2%   55.9%   73.6%
+Sonnet 4.6 / default                  80.9%  100.0%   14.6%    0.0%   59.1%   76.2%
+Sonnet 4.6 / few-shot                 78.7%  100.0%   12.2%    0.0%   56.6%   75.5%
+Sonnet 4.6 / minimal                  81.6%  100.0%   12.2%    0.0%   56.6%   76.6%
+Sonnet 4.6 / zero-shot                80.9%  100.0%   12.2%    1.2%   56.2%   75.0%
+GPT-4o / cot                          85.1%  100.0%   19.5%    0.0%   64.8%   62.8%
+GPT-4o / default                      81.6%  100.0%   29.3%    5.8%   56.7%   58.0%
+GPT-4o / few-shot                     82.3%  100.0%    9.8%    0.0%   67.4%   63.4%
+GPT-4o / minimal                      80.1%  100.0%   29.3%    5.8%   52.6%   55.7%
+GPT-4o / zero-shot                    80.9%  100.0%   31.7%    0.0%   61.0%   60.9%
+
+==========================================================================================
+V5 — ACCURACY BY MODULE
+==========================================================================================
+
+                                  Haiku 4.5 / cot Haiku 4.5 / default Haiku 4.5 / few-shot Haiku 4.5 / minimal Haiku 4.5 / zero-shot   Sonnet 4.5 / cot Sonnet 4.5 / default Sonnet 4.5 / few-shot Sonnet 4.5 / minimal Sonnet 4.5 / zero-shot   Sonnet 4.6 / cot Sonnet 4.6 / default Sonnet 4.6 / few-shot Sonnet 4.6 / minimal Sonnet 4.6 / zero-shot       GPT-4o / cot   GPT-4o / default  GPT-4o / few-shot   GPT-4o / minimal GPT-4o / zero-shot
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+           ticker_time_machine          62.5% (48)         75.0% (48)         70.8% (48)         66.7% (48)         70.8% (48)         83.0% (47)         75.0% (48)         83.3% (48)         77.1% (48)         75.0% (48)         81.2% (48)         79.2% (48)         75.0% (48)         72.9% (48)         75.0% (48)         81.2% (48)         77.1% (48)         77.1% (48)         72.9% (48)         77.1% (48)
+                  filing_clock          77.4% (31)         71.0% (31)         71.0% (31)         64.5% (31)         74.2% (31)         79.3% (29)         77.4% (31)         74.2% (31)         64.5% (31)         71.0% (31)         74.2% (31)         74.2% (31)         77.4% (31)         87.1% (31)         80.6% (31)         83.9% (31)         83.9% (31)         87.1% (31)         83.9% (31)         77.4% (31)
+       accounting_availability          66.7% (24)         87.5% (24)         70.8% (24)         79.2% (24)         75.0% (24)         77.3% (22)         95.8% (24)         87.5% (24)         87.5% (24)         87.5% (24)         79.2% (24)         83.3% (24)         87.5% (24)         83.3% (24)         83.3% (24)         91.7% (24)         83.3% (24)         87.5% (24)         83.3% (24)         91.7% (24)
+        survivorship_delisting          78.9% (38)         81.6% (38)         84.2% (38)         81.6% (38)         78.9% (38)         75.0% (36)         86.8% (38)         81.6% (38)         78.9% (38)         78.9% (38)         78.9% (38)         86.8% (38)         78.9% (38)         86.8% (38)         86.8% (38)         86.8% (38)         84.2% (38)         81.6% (38)         84.2% (38)         81.6% (38)
+
+==========================================================================================
+V5 — ACCURACY BY DIFFICULTY
+==========================================================================================
+
+                   Haiku 4.5 / cot Haiku 4.5 / default Haiku 4.5 / few-shot Haiku 4.5 / minimal Haiku 4.5 / zero-shot   Sonnet 4.5 / cot Sonnet 4.5 / default Sonnet 4.5 / few-shot Sonnet 4.5 / minimal Sonnet 4.5 / zero-shot   Sonnet 4.6 / cot Sonnet 4.6 / default Sonnet 4.6 / few-shot Sonnet 4.6 / minimal Sonnet 4.6 / zero-shot       GPT-4o / cot   GPT-4o / default  GPT-4o / few-shot   GPT-4o / minimal GPT-4o / zero-shot
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+           easy          88.9% (18)         88.9% (18)         88.9% (18)         77.8% (18)         88.9% (18)         77.8% (18)         88.9% (18)         88.9% (18)         77.8% (18)         83.3% (18)         77.8% (18)         83.3% (18)         77.8% (18)         88.9% (18)         88.9% (18)         94.4% (18)         88.9% (18)         94.4% (18)         88.9% (18)         94.4% (18)
+         medium          76.5% (34)         79.4% (34)         73.5% (34)         70.6% (34)         73.5% (34)         87.9% (33)         88.2% (34)         79.4% (34)         76.5% (34)         79.4% (34)         82.4% (34)         88.2% (34)         85.3% (34)         88.2% (34)         79.4% (34)         88.2% (34)         94.1% (34)         88.2% (34)         94.1% (34)         85.3% (34)
+           hard          65.2% (89)         75.3% (89)         71.9% (89)         71.9% (89)         71.9% (89)         75.9% (83)         78.7% (89)         80.9% (89)         76.4% (89)         75.3% (89)         77.5% (89)         77.5% (89)         76.4% (89)         77.5% (89)         79.8% (89)         82.0% (89)         75.3% (89)         77.5% (89)         73.0% (89)         76.4% (89)
+
+==========================================================================================
+V5 — ACCURACY ON KEY CASE TAGS
+==========================================================================================
+
+                          Haiku 4.5 / cot Haiku 4.5 / default Haiku 4.5 / few-shot Haiku 4.5 / minimal Haiku 4.5 / zero-shot   Sonnet 4.5 / cot Sonnet 4.5 / default Sonnet 4.5 / few-shot Sonnet 4.5 / minimal Sonnet 4.5 / zero-shot   Sonnet 4.6 / cot Sonnet 4.6 / default Sonnet 4.6 / few-shot Sonnet 4.6 / minimal Sonnet 4.6 / zero-shot       GPT-4o / cot   GPT-4o / default  GPT-4o / few-shot   GPT-4o / minimal GPT-4o / zero-shot
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+            trap_valid          22.7% (22)         40.9% (22)         40.9% (22)         27.3% (22)         31.8% (22)         47.6% (21)         45.5% (22)         31.8% (22)         36.4% (22)         31.8% (22)         50.0% (22)         45.5% (22)         31.8% (22)         40.9% (22)         31.8% (22)         63.6% (22)         63.6% (22)         72.7% (22)         59.1% (22)         40.9% (22)
+      false_valid_trap         100.0% (16)         93.8% (16)         93.8% (16)        100.0% (16)        100.0% (16)        100.0% (14)        100.0% (16)        100.0% (16)        100.0% (16)        100.0% (16)         87.5% (16)         68.8% (16)         87.5% (16)         81.2% (16)         87.5% (16)         81.2% (16)         87.5% (16)         75.0% (16)         87.5% (16)         93.8% (16)
+             near_miss         100.0% (17)         94.1% (17)         94.1% (17)        100.0% (17)        100.0% (17)        100.0% (15)        100.0% (17)        100.0% (17)        100.0% (17)        100.0% (17)         88.2% (17)         70.6% (17)         88.2% (17)         82.4% (17)         88.2% (17)         82.4% (17)         88.2% (17)         76.5% (17)         88.2% (17)         94.1% (17)
+             ambiguous           0.0% (14)         21.4% (14)          7.1% (14)          0.0% (14)          0.0% (14)         23.1% (13)         21.4% (14)         57.1% (14)         14.3% (14)         21.4% (14)         35.7% (14)         78.6% (14)         71.4% (14)         64.3% (14)         64.3% (14)         42.9% (14)         35.7% (14)         50.0% (14)         21.4% (14)         28.6% (14)
+       multi_violation          87.5% ( 8)        100.0% ( 8)         87.5% ( 8)        100.0% ( 8)        100.0% ( 8)        100.0% ( 8)        100.0% ( 8)        100.0% ( 8)        100.0% ( 8)        100.0% ( 8)        100.0% ( 8)         87.5% ( 8)         87.5% ( 8)        100.0% ( 8)        100.0% ( 8)        100.0% ( 8)         87.5% ( 8)         87.5% ( 8)         87.5% ( 8)        100.0% ( 8)
+
+==========================================================================================
+V5 — LATENCY COMPARISON
+==========================================================================================
+
+Model / Strategy                       Mean (ms)    Median (ms)     Max (ms)
+---------------------------------------------------------------------------
+Haiku 4.5 / cot                            8732          8700       13728
+Haiku 4.5 / default                        4655          4885        8085
+Haiku 4.5 / few-shot                       4211          4276        9770
+Haiku 4.5 / minimal                        4831          5004        9216
+Haiku 4.5 / zero-shot                      5534          5791        9148
+Sonnet 4.5 / cot                          18694         18708       30618
+Sonnet 4.5 / default                      10236         10589       24620
+Sonnet 4.5 / few-shot                      9147          9111       64795
+Sonnet 4.5 / minimal                      11696         12075       17444
+Sonnet 4.5 / zero-shot                    12959         13365       23142
+Sonnet 4.6 / cot                          22325         22526       56645
+Sonnet 4.6 / default                      12856         13448       20771
+Sonnet 4.6 / few-shot                     11217         11645       21688
+Sonnet 4.6 / minimal                      13262         13632       20617
+Sonnet 4.6 / zero-shot                    15301         15312       25747
+GPT-4o / cot                               2432          2200       18388
+GPT-4o / default                           1730          1447       20965
+GPT-4o / few-shot                          1658          1563       10815
+GPT-4o / minimal                           1663          1495       10534
+GPT-4o / zero-shot                         2109          1998       12697
+
+==========================================================================================
+V6-ONLY — OVERALL METRICS (chronology + code cases)
+==========================================================================================
+
+Model / Strategy                        Acc   Parse   F.Inv   F.Val      F1  Repair
+--------------------------------------------------------------------------------
+Haiku 4.5 / cot                       75.0%  100.0%   71.4%    0.0%   43.2%   64.8%
+Haiku 4.5 / default                   75.0%  100.0%   42.9%    7.7%   58.3%   69.5%
+Haiku 4.5 / few-shot                  70.0%  100.0%   42.9%    0.0%   55.0%   69.5%
+Haiku 4.5 / minimal                   70.0%  100.0%   85.7%    0.0%   39.2%   69.6%
+Haiku 4.5 / zero-shot                 75.0%  100.0%   57.1%    0.0%   52.5%   71.1%
+Sonnet 4.5 / cot                      70.0%  100.0%   57.1%    0.0%   52.5%   67.3%
+Sonnet 4.5 / default                  70.0%  100.0%   71.4%    7.7%   56.7%   69.7%
+Sonnet 4.5 / few-shot                 75.0%  100.0%   57.1%    0.0%   50.8%   64.8%
+Sonnet 4.5 / minimal                  70.0%  100.0%   85.7%    0.0%   45.0%   72.4%
+Sonnet 4.5 / zero-shot                70.0%  100.0%   57.1%    7.7%   45.8%   73.4%
+Sonnet 4.6 / cot                      80.0%  100.0%   57.1%    0.0%   50.7%   70.7%
+Sonnet 4.6 / default                  60.0%  100.0%    0.0%    7.7%   40.8%   73.8%
+Sonnet 4.6 / few-shot                 60.0%  100.0%   14.3%    7.7%   41.7%   73.0%
+Sonnet 4.6 / minimal                  65.0%  100.0%    0.0%    0.0%   40.0%   74.9%
+Sonnet 4.6 / zero-shot                70.0%  100.0%   14.3%    0.0%   50.0%   77.4%
+GPT-4o / cot                          75.0%  100.0%   14.3%    7.7%   68.3%   64.5%
+GPT-4o / default                      80.0%  100.0%   42.9%    0.0%   63.3%   59.2%
+GPT-4o / few-shot                     75.0%  100.0%   28.6%    0.0%   60.0%   58.3%
+GPT-4o / minimal                      80.0%  100.0%   42.9%    7.7%   53.3%   52.8%
+GPT-4o / zero-shot                    80.0%  100.0%   28.6%    0.0%   56.7%   56.0%
+
+==========================================================================================
+KEY FINDINGS — V5
+==========================================================================================
+
+1. HIGHEST ACCURACY:        GPT-4o / cot (85.1%)
+2. SAFEST (lowest FVR):     Sonnet 4.5 / minimal (0.0%)
+3. LEAST OVERCAUTIOUS:      GPT-4o / few-shot (9.8% false invalid)
+
+Reminder:
+- False invalid = overcaution (flags valid workflows as broken)
+- False valid  = missed violations (approves broken workflows)
+- For production use, low false valid rate matters most
+
+==========================================================================================
