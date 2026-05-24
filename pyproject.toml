@@ -67,9 +67,9 @@ all = [
 run-eval = "backtest_lie_detector.evals.run_eval:main"
 
 [project.urls]
-Homepage = "https://github.com/your-org/backtest-lie-detector"
-Documentation = "https://github.com/your-org/backtest-lie-detector#readme"
-Repository = "https://github.com/your-org/backtest-lie-detector"
+Homepage = "https://github.com/mohitapte4/Backtest-Lie-Detector"
+Documentation = "https://github.com/mohitapte4/Backtest-Lie-Detector#readme"
+Repository = "https://github.com/mohitapte4/Backtest-Lie-Detector"
 
 [tool.setuptools.packages.find]
 where = ["src"]

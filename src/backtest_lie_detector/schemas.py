@@ -291,7 +291,7 @@ class EvaluationConfig(BaseModel):
         default="openai",
         description="API provider to use"
     )
-    system_prompt_type: Literal["default", "finance_auditor", "minimal"] = Field(
+    system_prompt_type: Literal["default", "finance_auditor", "minimal", "chain_of_thought"] = Field(
         default="finance_auditor",
         description="Type of system prompt to use"
     )
