@@ -45,10 +45,8 @@ Thumbs.db
 # Project specific
 data/raw/*
 !data/raw/.gitkeep
-outputs/results/*
-!outputs/results/.gitkeep
-outputs/figures/*
-!outputs/figures/.gitkeep
+outputs/results/.gitkeep
+outputs/figures/.gitkeep
 
 # Keep benchmark data
 !data/benchmark/*.jsonl
