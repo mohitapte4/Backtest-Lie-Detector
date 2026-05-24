@@ -932,30 +932,30 @@ def generate_v4_cases() -> list[BenchmarkCase]:
 
 def print_benchmark_summary(cases: list[BenchmarkCase]) -> None:
     """Print summary statistics for the benchmark."""
-    print(f"\nBenchmark Summary")
-    print(f"=" * 50)
+    print("\nBenchmark Summary")
+    print("=" * 50)
     print(f"Total cases: {len(cases)}")
     
     # By module
-    print(f"\nBy Module:")
+    print("\nBy Module:")
     for module in Module:
         count = len([c for c in cases if c.module == module])
         print(f"  {module.value}: {count}")
     
     # By difficulty
-    print(f"\nBy Difficulty:")
+    print("\nBy Difficulty:")
     for diff in Difficulty:
         count = len([c for c in cases if c.difficulty == diff])
         print(f"  {diff.value}: {count}")
     
     # By validity
-    print(f"\nBy Expected Validity:")
+    print("\nBy Expected Validity:")
     for val in Validity:
         count = len([c for c in cases if c.expected_validity == val])
         print(f"  {val.value}: {count}")
     
     # Violation type coverage
-    print(f"\nViolation Type Coverage:")
+    print("\nViolation Type Coverage:")
     for vtype in ViolationType:
         count = len([c for c in cases if vtype in c.expected_violations])
         print(f"  {vtype.value}: {count}")
@@ -966,7 +966,7 @@ def print_v4_summary(cases: list[BenchmarkCase]) -> None:
     print_benchmark_summary(cases)
     
     # Count by tags
-    print(f"\nBy Case Tags:")
+    print("\nBy Case Tags:")
     tag_counts = {}
     for case in cases:
         if hasattr(case, 'case_tags'):
@@ -977,9 +977,9 @@ def print_v4_summary(cases: list[BenchmarkCase]) -> None:
         print(f"  {tag}: {count}")
     
     # Calibration breakdown
-    print(f"\nCalibration Breakdown:")
-    trap_valid = len([c for c in cases if hasattr(case, 'case_tags') and 'trap_valid' in c.case_tags])
-    ambiguous = len([c for c in cases if hasattr(case, 'case_tags') and 'ambiguous' in c.case_tags])
+    print("\nCalibration Breakdown:")
+    trap_valid = len([c for c in cases if hasattr(c, 'case_tags') and 'trap_valid' in c.case_tags])
+    ambiguous = len([c for c in cases if hasattr(c, 'case_tags') and 'ambiguous' in c.case_tags])
     print(f"  trap_valid cases: {trap_valid}")
     print(f"  ambiguous cases: {ambiguous}")
 
@@ -1064,7 +1064,7 @@ def print_v5_summary(cases: list[BenchmarkCase]) -> None:
     print_benchmark_summary(cases)
     
     # Count by tags
-    print(f"\nBy Case Tags:")
+    print("\nBy Case Tags:")
     tag_counts = {}
     for case in cases:
         if hasattr(case, 'case_tags'):
@@ -1075,7 +1075,7 @@ def print_v5_summary(cases: list[BenchmarkCase]) -> None:
         print(f"  {tag}: {count}")
     
     # V5 breakdown
-    print(f"\nV5 Breakdown:")
+    print("\nV5 Breakdown:")
     trap_valid = len([c for c in cases if hasattr(c, 'case_tags') and 'trap_valid' in c.case_tags])
     ambiguous = len([c for c in cases if hasattr(c, 'case_tags') and 'ambiguous' in c.case_tags])
     false_valid_trap = len([c for c in cases if hasattr(c, 'case_tags') and 'false_valid_trap' in c.case_tags])
@@ -1092,7 +1092,7 @@ def print_v6_summary(cases: list[BenchmarkCase]) -> None:
     print_benchmark_summary(cases)
     
     # Count by tags
-    print(f"\nBy Case Tags:")
+    print("\nBy Case Tags:")
     tag_counts = {}
     for case in cases:
         if hasattr(case, 'case_tags'):
@@ -1103,7 +1103,7 @@ def print_v6_summary(cases: list[BenchmarkCase]) -> None:
         print(f"  {tag}: {count}")
     
     # V6 breakdown
-    print(f"\nV6 Breakdown:")
+    print("\nV6 Breakdown:")
     trap_valid = len([c for c in cases if hasattr(c, 'case_tags') and 'trap_valid' in c.case_tags])
     ambiguous = len([c for c in cases if hasattr(c, 'case_tags') and 'ambiguous' in c.case_tags])
     false_valid_trap = len([c for c in cases if hasattr(c, 'case_tags') and 'false_valid_trap' in c.case_tags])

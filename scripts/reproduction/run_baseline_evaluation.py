@@ -5,7 +5,7 @@ Evaluate rule-based baselines on V4 benchmark.
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
 from backtest_lie_detector.benchmark.build_cases import load_benchmark
 from backtest_lie_detector.baselines.rule_baseline import (

@@ -36,21 +36,21 @@ ANTHROPIC_API_KEY=your-key   # For Claude runs
 
 ```bash
 # GPT-4o on V5 (requires OPENAI_API_KEY)
-python run_prompting_comparison.py          # zero-shot, few-shot, CoT
-python run_gpt4o_base_prompts.py            # minimal, default
+python scripts/reproduction/run_prompting_comparison.py          # zero-shot, few-shot, CoT
+python scripts/reproduction/run_gpt4o_base_prompts.py            # minimal, default
 
 # GPT-4o on V6-only cases (chronology + code)
-python run_gpt4o_v6only.py
+python scripts/reproduction/run_gpt4o_v6only.py
 
 # Claude models on V5 + V6-only (requires ANTHROPIC_API_KEY)
 # Runs Sonnet 4.5, Sonnet 4.6, Haiku 4.5 with all 5 strategies
-python run_claude_prompting_comparison.py
+python scripts/reproduction/run_claude_prompting_comparison.py
 
 # Compute metrics and save summary
-python compute_all_metrics.py
+python scripts/reproduction/compute_all_metrics.py
 
 # Generate comparison figures
-python generate_all_figures.py
+python scripts/reproduction/generate_all_figures.py
 ```
 
 All run scripts support **resume** — if interrupted, re-run the same command and it picks up where it stopped.
@@ -59,10 +59,10 @@ All run scripts support **resume** — if interrupted, re-run the same command a
 
 | Script | API Calls | Est. Cost | Time |
 |--------|-----------|-----------|------|
-| `run_prompting_comparison.py` | 423 | ~$4 | ~8 min |
-| `run_gpt4o_base_prompts.py` | 282 | ~$3 | ~5 min |
-| `run_gpt4o_v6only.py` | 100 | ~$1 | ~3 min |
-| `run_claude_prompting_comparison.py` | 2,415 | ~$15 | ~45 min |
+| `scripts/reproduction/run_prompting_comparison.py` | 423 | ~$4 | ~8 min |
+| `scripts/reproduction/run_gpt4o_base_prompts.py` | 282 | ~$3 | ~5 min |
+| `scripts/reproduction/run_gpt4o_v6only.py` | 100 | ~$1 | ~3 min |
+| `scripts/reproduction/run_claude_prompting_comparison.py` | 2,415 | ~$15 | ~45 min |
 
 ## Adding a New Model
 
@@ -72,8 +72,8 @@ The compute and figure scripts **auto-discover** result files. To add a new mode
    - V5 results: `{model}_{strategy}_v5.jsonl`
    - V6-only results: `{model}_{strategy}_v6only.jsonl`
    - Or for GPT-4o style: `prompting_{strategy}.jsonl`
-2. Re-run `python compute_all_metrics.py` and `python generate_all_figures.py`
-3. Or create a new run script following the pattern in `run_claude_prompting_comparison.py`
+2. Re-run `python scripts/reproduction/compute_all_metrics.py` and `python scripts/reproduction/generate_all_figures.py`
+3. Or create a new run script following the pattern in `scripts/reproduction/run_claude_prompting_comparison.py`
 
 ### Example: Adding Gemini
 
@@ -117,9 +117,9 @@ Defined in `src/backtest_lie_detector/evals/prompts.py` as `SYSTEM_PROMPT_COT`.
 |------|---------|
 | `src/backtest_lie_detector/evals/prompts.py` | All prompt templates including CoT |
 | `src/backtest_lie_detector/schemas.py` | Data models (updated for `chain_of_thought`) |
-| `run_prompting_comparison.py` | GPT-4o zero-shot/few-shot/CoT on V5 |
-| `run_gpt4o_base_prompts.py` | GPT-4o minimal/default on V5 |
-| `run_gpt4o_v6only.py` | GPT-4o all strategies on V6-only |
-| `run_claude_prompting_comparison.py` | All Claude models, all strategies, V5 + V6-only |
-| `compute_all_metrics.py` | Auto-discovers results, computes metrics, saves summary |
-| `generate_all_figures.py` | Auto-discovers results, generates comparison charts |
+| `scripts/reproduction/run_prompting_comparison.py` | GPT-4o zero-shot/few-shot/CoT on V5 |
+| `scripts/reproduction/run_gpt4o_base_prompts.py` | GPT-4o minimal/default on V5 |
+| `scripts/reproduction/run_gpt4o_v6only.py` | GPT-4o all strategies on V6-only |
+| `scripts/reproduction/run_claude_prompting_comparison.py` | All Claude models, all strategies, V5 + V6-only |
+| `scripts/reproduction/compute_all_metrics.py` | Auto-discovers results, computes metrics, saves summary |
+| `scripts/reproduction/generate_all_figures.py` | Auto-discovers results, generates comparison charts |

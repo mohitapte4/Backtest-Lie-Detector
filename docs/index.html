@@ -1006,18 +1006,21 @@ Labels: 41 Valid | 86 Invalid | 14 Ambiguous</div>
                 <h2>Try It Yourself</h2>
                 
                 <pre><code># Clone and setup
-git clone https://github.com/your-org/backtest-lie-detector
-cd backtest-lie-detector
+git clone https://github.com/mohitapte4/Backtest-Lie-Detector
+cd Backtest-Lie-Detector
 pip install -e ".[all]"
 
 # Generate benchmark
 python -m backtest_lie_detector.benchmark.build_cases v6
 
 # Run evaluation
-python run_v6_chronology_only.py
-python run_code_cases_eval.py</code></pre>
+python scripts/reproduce.py
 
-                <p>The repo includes all 141 benchmark cases, evaluation scripts, and our raw model outputs so you can reproduce the results.</p>
+# Or rerun live V6 batteries:
+python scripts/reproduction/run_v6_chronology_only.py
+python scripts/reproduction/run_code_cases_eval.py</code></pre>
+
+                <p>The repo includes the preserved V1-V6 benchmark files, cleaned reproduction scripts, and the latest committed outputs needed to rebuild the summary metrics and figures.</p>
             </section>
 
             <section>
@@ -1032,7 +1035,7 @@ python run_code_cases_eval.py</code></pre>
         <div class="container">
             <p>Backtest Lie Detector</p>
             <p>UChicago Generative AI for Finance, Spring 2026</p>
-            <p><a href="https://github.com/your-org/backtest-lie-detector">View on GitHub</a></p>
+            <p><a href="https://github.com/mohitapte4/Backtest-Lie-Detector">View on GitHub</a></p>
         </div>
     </footer>
     <script>

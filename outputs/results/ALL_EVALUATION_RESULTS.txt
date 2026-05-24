@@ -1,5 +1,5 @@
 Loaded 141 V5 benchmark cases
-Loaded 20 V6-only cases (chronology + code)
+Loaded 27 V6-only cases (chronology + code)
 
 Auto-discovering result files...
   [V5]      Haiku 4.5 / cot: 141 results (claude_haiku45_cot_v5.jsonl)

@@ -1,5 +1,5 @@
 """
-Run V6 evaluation on ONLY the 8 new chronology cases.
+Run V6 evaluation on ONLY the 15 chronology cases.
 
 This tests pure temporal reasoning without domain complexity.
 These cases isolate the "anachronism detection" capability.
@@ -12,7 +12,7 @@ import json
 from pathlib import Path
 from datetime import datetime
 
-sys.path.insert(0, str(Path(__file__).parent / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
 from dotenv import load_dotenv
 import jsonlines
@@ -29,7 +29,7 @@ from backtest_lie_detector.schemas import (
 from backtest_lie_detector.benchmark.build_cases import get_chronology_cases_only
 from backtest_lie_detector.evals.model_clients import OpenAIClient, AnthropicClient
 from backtest_lie_detector.evals.prompts import get_system_prompt
-from backtest_lie_detector.evals.scoring import score_response, aggregate_scores
+from backtest_lie_detector.evals.scoring import score_response
 
 
 def run_evaluation(
@@ -247,7 +247,7 @@ def main():
     
     # Print summary
     print("\n" + "=" * 70)
-    print("CHRONOLOGY CASES SUMMARY (8 cases)")
+    print(f"CHRONOLOGY CASES SUMMARY ({len(cases)} cases)")
     print("=" * 70)
     
     print(f"\n{'Model':<30} {'Accuracy':>10} {'Valid Acc':>12} {'Invalid Acc':>12}")

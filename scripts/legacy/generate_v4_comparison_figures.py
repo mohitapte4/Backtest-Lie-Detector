@@ -5,7 +5,7 @@ Generate V4 benchmark comparison figures with both specialized and generic promp
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
 import json
 import pandas as pd

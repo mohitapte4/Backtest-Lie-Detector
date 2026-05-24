@@ -20,7 +20,7 @@ Scoring uses the exact AA-Omniscience OI formula:
 
 Usage:
     export PYTHONPATH=src
-    python run_aa_omniscience.py
+    python scripts/reproduction/run_aa_omniscience.py
 
 Output files:
     outputs/results/aa_omniscience_gpt4o_generic.jsonl
@@ -38,7 +38,7 @@ from pathlib import Path
 import jsonlines
 from dotenv import load_dotenv
 
-sys.path.insert(0, str(Path(__file__).parent / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
 from backtest_lie_detector.evals.model_clients import AnthropicClient, OpenAIClient  # noqa: E402
 from backtest_lie_detector.evals.prompts import SYSTEM_PROMPT_FINANCE_AUDITOR  # noqa: E402

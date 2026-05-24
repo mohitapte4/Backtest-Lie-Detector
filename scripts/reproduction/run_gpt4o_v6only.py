@@ -1,8 +1,7 @@
 """
-Run GPT-4o on V5 with the base prompts (minimal + default).
+Run GPT-4o on V6-only cases (chronology + code) with all 5 prompting strategies.
 
-Complements the existing zero-shot/few-shot/CoT results with the
-original prompt types for a complete comparison.
+Complements the existing GPT-4o V5 results with the new V6 cases.
 """
 
 import os
@@ -12,7 +11,7 @@ import json
 from pathlib import Path
 from datetime import datetime
 
-sys.path.insert(0, str(Path(__file__).parent / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
 from dotenv import load_dotenv
 import jsonlines
@@ -26,6 +25,7 @@ from backtest_lie_detector.schemas import (
     ScoredResponse,
 )
 from backtest_lie_detector.benchmark.build_cases import load_benchmark
+from backtest_lie_detector.benchmark.code_cases import CODE_CASES
 from backtest_lie_detector.evals.model_clients import OpenAIClient
 from backtest_lie_detector.evals.prompts import (
     get_system_prompt,
@@ -134,35 +134,53 @@ def run_evaluation(
 
 def main():
     print("=" * 70)
-    print("GPT-4o BASE PROMPTS EVALUATION")
-    print("Minimal + Default prompts on V5 benchmark")
+    print("GPT-4o V6-ONLY EVALUATION")
+    print("All 5 prompting strategies on chronology + code cases")
     print(f"Started at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("=" * 70)
 
-    cases = load_benchmark("data/benchmark/benchmark_v5.jsonl")
-    print(f"\nLoaded {len(cases)} V5 benchmark cases")
+    # Load V6-only cases
+    v5_cases = load_benchmark("data/benchmark/benchmark_v5.jsonl")
+    v6_cases = load_benchmark("data/benchmark/benchmark_v6.jsonl")
+    v5_ids = set(c.id for c in v5_cases)
+    v6_only_cases = [c for c in v6_cases if c.id not in v5_ids]
+
+    code_cases = [BenchmarkCase.model_validate(c) for c in CODE_CASES]
+    v6_only_cases.extend(code_cases)
+    print(f"\nLoaded {len(v6_only_cases)} V6-only cases")
 
     client = OpenAIClient(model="gpt-4o")
+
+    strategies = {
+        "minimal": {"prompt_type": "minimal", "few_shot": 0, "max_tokens": 2000},
+        "default": {"prompt_type": "default", "few_shot": 0, "max_tokens": 2000},
+        "zero_shot": {"prompt_type": "finance_auditor", "few_shot": 0, "max_tokens": 2000},
+        "few_shot": {"prompt_type": "finance_auditor", "few_shot": 3, "max_tokens": 2000},
+        "cot": {"prompt_type": "chain_of_thought", "few_shot": 0, "max_tokens": 4000},
+    }
+
     results = {}
 
-    for strat_name, prompt_type in [("minimal", "minimal"), ("default", "default")]:
+    for strat_name, strat_info in strategies.items():
+        config_name = f"gpt4o_{strat_name}"
+
         config = EvaluationConfig(
             model_name="gpt-4o",
-            config_name=f"gpt4o_{strat_name}",
+            config_name=config_name,
             provider="openai",
-            system_prompt_type=prompt_type,
+            system_prompt_type=strat_info["prompt_type"],
             temperature=0.0,
-            max_tokens=2000,
-            few_shot_examples=0,
+            max_tokens=strat_info["max_tokens"],
+            few_shot_examples=strat_info["few_shot"],
         )
 
         print(f"\n{'=' * 50}")
-        print(f"GPT-4o / {strat_name} — V5 ({len(cases)} cases)")
+        print(f"GPT-4o / {strat_name} — V6-only ({len(v6_only_cases)} cases)")
         print("=" * 50)
 
-        output_path = f"outputs/results/prompting_{strat_name}.jsonl"
+        output_path = f"outputs/results/gpt4o_{strat_name}_v6only.jsonl"
         results[strat_name] = run_evaluation(
-            cases=cases,
+            cases=v6_only_cases,
             config=config,
             client=client,
             output_path=output_path,
@@ -170,7 +188,7 @@ def main():
 
     # Summary
     print(f"\n{'=' * 70}")
-    print("GPT-4o BASE PROMPT RESULTS")
+    print("GPT-4o V6-ONLY RESULTS")
     print("=" * 70)
 
     header = f"{'Strategy':<22} {'Accuracy':>10} {'Parse':>8} {'False Inv':>11} {'False Val':>11}"

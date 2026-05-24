@@ -1,8 +1,8 @@
 """
-Compare prompting strategies: zero-shot vs few-shot vs chain-of-thought.
+Run GPT-4o on V5 with the base prompts (minimal + default).
 
-Runs GPT-4o on the V5 benchmark (141 cases) with three prompting strategies
-and saves results for comparison.
+Complements the existing zero-shot/few-shot/CoT results with the
+original prompt types for a complete comparison.
 """
 
 import os
@@ -12,7 +12,7 @@ import json
 from pathlib import Path
 from datetime import datetime
 
-sys.path.insert(0, str(Path(__file__).parent / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
 from dotenv import load_dotenv
 import jsonlines
@@ -26,7 +26,7 @@ from backtest_lie_detector.schemas import (
     ScoredResponse,
 )
 from backtest_lie_detector.benchmark.build_cases import load_benchmark
-from backtest_lie_detector.evals.model_clients import OpenAIClient, AnthropicClient
+from backtest_lie_detector.evals.model_clients import OpenAIClient
 from backtest_lie_detector.evals.prompts import (
     get_system_prompt,
     format_benchmark_prompt,
@@ -45,7 +45,6 @@ def run_evaluation(
     system_prompt = get_system_prompt(config.system_prompt_type)
     scored_responses = []
 
-    # Check for existing results to support resume
     completed_ids = set()
     if Path(output_path).exists():
         with jsonlines.open(output_path) as reader:
@@ -74,6 +73,7 @@ def run_evaluation(
             raw_response, latency_ms = client.call(
                 system_prompt=system_prompt,
                 user_prompt=user_prompt,
+                max_tokens=config.max_tokens,
             )
 
             parsed_response = None
@@ -134,135 +134,62 @@ def run_evaluation(
 
 def main():
     print("=" * 70)
-    print("PROMPTING STRATEGY COMPARISON")
-    print("Zero-Shot vs Few-Shot vs Chain-of-Thought")
+    print("GPT-4o BASE PROMPTS EVALUATION")
+    print("Minimal + Default prompts on V5 benchmark")
     print(f"Started at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("=" * 70)
 
-    # Load V5 benchmark
     cases = load_benchmark("data/benchmark/benchmark_v5.jsonl")
     print(f"\nLoaded {len(cases)} V5 benchmark cases")
 
     client = OpenAIClient(model="gpt-4o")
     results = {}
 
-    # --- Config 1: Zero-shot (finance_auditor prompt, no examples) ---
-    print("\n" + "=" * 50)
-    print("Strategy 1: Zero-Shot (finance_auditor prompt)")
-    print("=" * 50)
+    for strat_name, prompt_type in [("minimal", "minimal"), ("default", "default")]:
+        config = EvaluationConfig(
+            model_name="gpt-4o",
+            config_name=f"gpt4o_{strat_name}",
+            provider="openai",
+            system_prompt_type=prompt_type,
+            temperature=0.0,
+            max_tokens=2000,
+            few_shot_examples=0,
+        )
 
-    zero_shot_config = EvaluationConfig(
-        model_name="gpt-4o",
-        config_name="gpt4o_zero_shot",
-        provider="openai",
-        system_prompt_type="finance_auditor",
-        temperature=0.0,
-        max_tokens=2000,
-        few_shot_examples=0,
-    )
+        print(f"\n{'=' * 50}")
+        print(f"GPT-4o / {strat_name} — V5 ({len(cases)} cases)")
+        print("=" * 50)
 
-    results["Zero-Shot"] = run_evaluation(
-        cases=cases,
-        config=zero_shot_config,
-        client=client,
-        output_path="outputs/results/prompting_zero_shot.jsonl",
-    )
+        output_path = f"outputs/results/prompting_{strat_name}.jsonl"
+        results[strat_name] = run_evaluation(
+            cases=cases,
+            config=config,
+            client=client,
+            output_path=output_path,
+        )
 
-    # --- Config 2: Few-shot (finance_auditor prompt + 3 examples) ---
-    print("\n" + "=" * 50)
-    print("Strategy 2: Few-Shot (3 examples)")
-    print("=" * 50)
-
-    few_shot_config = EvaluationConfig(
-        model_name="gpt-4o",
-        config_name="gpt4o_few_shot",
-        provider="openai",
-        system_prompt_type="finance_auditor",
-        temperature=0.0,
-        max_tokens=2000,
-        few_shot_examples=3,
-    )
-
-    results["Few-Shot (3)"] = run_evaluation(
-        cases=cases,
-        config=few_shot_config,
-        client=client,
-        output_path="outputs/results/prompting_few_shot.jsonl",
-    )
-
-    # --- Config 3: Chain-of-thought ---
-    print("\n" + "=" * 50)
-    print("Strategy 3: Chain-of-Thought")
-    print("=" * 50)
-
-    cot_config = EvaluationConfig(
-        model_name="gpt-4o",
-        config_name="gpt4o_cot",
-        provider="openai",
-        system_prompt_type="chain_of_thought",
-        temperature=0.0,
-        max_tokens=4000,
-        few_shot_examples=0,
-    )
-
-    results["Chain-of-Thought"] = run_evaluation(
-        cases=cases,
-        config=cot_config,
-        client=client,
-        output_path="outputs/results/prompting_cot.jsonl",
-    )
-
-    # --- Summary ---
-    print("\n" + "=" * 70)
-    print("PROMPTING STRATEGY COMPARISON RESULTS")
+    # Summary
+    print(f"\n{'=' * 70}")
+    print("GPT-4o BASE PROMPT RESULTS")
     print("=" * 70)
 
-    header = (
-        f"{'Strategy':<22} {'Accuracy':>10} {'Parse':>10} "
-        f"{'False Inv':>12} {'False Val':>12} {'Avg F1':>10}"
-    )
+    header = f"{'Strategy':<22} {'Accuracy':>10} {'Parse':>8} {'False Inv':>11} {'False Val':>11}"
     print(f"\n{header}")
-    print("-" * 78)
+    print("-" * 64)
 
     for name, scores in results.items():
         agg = aggregate_scores(scores)
         acc = agg.get("validity_accuracy", 0) * 100
         parse = agg.get("parse_success_rate", 0) * 100
-        f1 = agg.get("mean_violation_f1", 0) * 100
 
         parsed = [s for s in scores if s.parse_success and s.parsed_response]
-
-        invalid_cases = [s for s in parsed if s.parsed_response.validity.value != "valid"]
-        valid_cases = [s for s in parsed if s.parsed_response.validity.value == "valid"]
-
-        false_inv = sum(
-            1 for s in parsed
-            if s.parsed_response.validity.value == "invalid"
-            and s.validity_correct is False
-        )
-        false_val = sum(
-            1 for s in parsed
-            if s.parsed_response.validity.value == "valid"
-            and s.validity_correct is False
-        )
-
         n_parsed = len(parsed) if parsed else 1
-        fir = false_inv / n_parsed * 100
-        fvr = false_val / n_parsed * 100
+        false_inv = sum(1 for s in parsed if s.parsed_response.validity.value == "invalid" and not s.validity_correct)
+        false_val = sum(1 for s in parsed if s.parsed_response.validity.value == "valid" and not s.validity_correct)
 
-        print(
-            f"{name:<22} {acc:>9.1f}% {parse:>9.1f}% "
-            f"{fir:>11.1f}% {fvr:>11.1f}% {f1:>9.1f}%"
-        )
+        print(f"{name:<22} {acc:>9.1f}% {parse:>7.1f}% {false_inv/n_parsed*100:>10.1f}% {false_val/n_parsed*100:>10.1f}%")
 
-    print("\n" + "=" * 70)
-    print(f"Completed at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    print("=" * 70)
-    print("\nOutput files:")
-    print("  - outputs/results/prompting_zero_shot.jsonl")
-    print("  - outputs/results/prompting_few_shot.jsonl")
-    print("  - outputs/results/prompting_cot.jsonl")
-    print("\nRun compute_prompting_metrics.py for detailed analysis.")
+    print(f"\nCompleted at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
 
 if __name__ == "__main__":

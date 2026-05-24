@@ -5,7 +5,7 @@ Combine V4 results with V5 new case results and compute full V5 metrics.
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
 import jsonlines
 import pandas as pd
