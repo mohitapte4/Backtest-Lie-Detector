@@ -1089,27 +1089,13 @@ Labels: 41 Valid | 86 Invalid | 14 Ambiguous</div>
             <section>
                 <h2>AA-Omniscience Cross-Benchmark</h2>
 
-                <p>The BLD <code>finance_auditor</code> system prompt encodes domain knowledge about <em>temporal reasoning</em> in finance: identifier validity, information availability, universe construction, and an explicit "do not assume validity" stance. A natural question is whether that domain priming also helps with <em>factual recall</em> of finance regulatory knowledge — exact ASC paragraph citations, PCAOB rule numbers, SEC filing requirements. We tested transferability by running the same prompt on a separate benchmark designed to measure factual recall and hallucination.</p>
+                <p>The BLD <code>finance_auditor</code> prompt encodes domain knowledge about <em>temporal reasoning</em> in finance. Does that domain priming also help with <em>factual recall</em> — exact ASC paragraph citations, PCAOB rule numbers, SEC filing requirements? We tested transferability on a separate benchmark designed for that.</p>
 
-                <h3>About AA-Omniscience</h3>
-
-                <p><a href="https://artificialanalysis.ai/" target="_blank" rel="noopener">AA-Omniscience</a> is a 6,000-question knowledge benchmark from Artificial Analysis that rewards correct answers and penalizes confident wrong ones while treating abstention as neutral. The headline metric is the Omniscience Index:</p>
+                <p><a href="https://artificialanalysis.ai/" target="_blank" rel="noopener">AA-Omniscience</a> is a 6,000-question benchmark that rewards correct answers, penalizes confident wrong ones, and treats abstention as neutral. The headline metric:</p>
 
                 <pre><code>OI = 100 × (correct − incorrect) / (correct + partial + incorrect + abstained)</code></pre>
 
-                <p>Range: −100 to +100. The value sits at zero when correct answers exactly match incorrect ones, and goes negative when a model hallucinates more than it gets right. The companion <strong>hallucination rate</strong> = incorrect / (partial + incorrect + abstained) measures how often a model produces a wrong answer when it does not know the right one — a lower rate means better calibration (the model abstains rather than guessing).</p>
-
-                <h3>How We Tested</h3>
-
-                <p>We sampled 100 Finance-domain questions from the public Hugging Face release of the dataset and ran them on three configurations:</p>
-
-                <ul>
-                    <li><strong>GPT-4o Generic</strong> — plain "answer the question concisely" instruction, no domain priming.</li>
-                    <li><strong>GPT-4o + BLD Specialized</strong> — the full <code>finance_auditor</code> prompt with the JSON-response placeholder swapped for "answer with only the exact answer". All four BLD principles preserved, just asking for plain text instead of an audit verdict.</li>
-                    <li><strong>Claude Sonnet 4.5 + BLD Specialized</strong> — same adapted BLD prompt, evaluated through Anthropic's API.</li>
-                </ul>
-
-                <p>Each response was graded as CORRECT / PARTIALLY_CORRECT / INCORRECT / NOT_ATTEMPTED by GPT-4o acting as judge. (Artificial Analysis's published numbers use Gemini Flash as judge, which is why our absolute scores are lower than theirs — but the relative ordering across our three configurations is internally valid since all three used identical methodology.)</p>
+                <p>Range −100 to +100; the companion <strong>hallucination rate</strong> = incorrect / (partial + incorrect + abstained) measures how often a model guesses when it doesn't know. We sampled 100 Finance-domain questions and ran three configurations: GPT-4o with a plain instruction, GPT-4o with the full BLD prompt, and Claude Sonnet 4.5 with the BLD prompt. GPT-4o graded each response (Artificial Analysis uses Gemini Flash, so our absolute scores are lower than theirs, but the relative ordering across our three configs is internally valid).</p>
 
                 <h3>Overall Results</h3>
 
@@ -1178,39 +1164,15 @@ Labels: 41 Valid | 86 Invalid | 14 Ambiguous</div>
                     </table>
                 </div>
 
-                <h3>By Topic</h3>
+                <h3>Findings</h3>
 
-                <div class="table-wrapper">
-                    <table>
-                        <tr>
-                            <th>Topic</th>
-                            <th>Questions</th>
-                            <th>GPT-4o Generic</th>
-                            <th>GPT-4o Specialized</th>
-                            <th>Claude Sonnet</th>
-                        </tr>
-                        <tr><td>Accounting</td><td>20</td><td>−20.0</td><td>−10.0</td><td>−20.0</td></tr>
-                        <tr><td>Business &amp; Management</td><td>10</td><td>−40.0</td><td>−40.0</td><td class="good">+30.0</td></tr>
-                        <tr><td>Corporate &amp; Markets</td><td>20</td><td>−30.0</td><td>−35.0</td><td>−5.0</td></tr>
-                        <tr><td>Economics</td><td>20</td><td>−25.0</td><td>−30.0</td><td>+5.0</td></tr>
-                        <tr><td>Financial Institutions</td><td>15</td><td>−13.3</td><td>−13.3</td><td>−20.0</td></tr>
-                        <tr><td>Investments</td><td>15</td><td class="bad">−60.0</td><td class="bad">−66.7</td><td class="bad">−53.3</td></tr>
-                    </table>
-                </div>
+                <p><strong>1. Domain priming does not transfer to factual recall.</strong> GPT-4o Generic (−30.0 OI) and GPT-4o + BLD (−31.0 OI) are statistically indistinguishable. The four BLD principles do not help the model recall ASC paragraph numbers or PCAOB rule codes.</p>
 
-                <p>The Investments topic is the hardest across every configuration. These questions involve exact index methodology rules, specific thresholds, and precise institutional definitions — at the outer edge of what any of these models has reliably memorized.</p>
+                <p><strong>2. The two benchmarks rank models differently.</strong> GPT-4o leads BLD (85.1% with chain-of-thought); Claude Sonnet 4.5 leads AA-Omniscience (−12 OI vs −30/−31). Strong temporal reasoning does not imply strong factual recall.</p>
 
-                <h3>Three Findings</h3>
+                <p><strong>3. Claude's advantage is calibration, not knowledge.</strong> Claude's accuracy (35%) is only marginally higher than GPT-4o's (31–33%), but Claude abstained 12 times vs GPT-4o's 0–2. Since OI treats abstention as neutral, those abstentions avoid 12 potential −1 deductions. The 72.3% hallucination rate vs 89.9–94% confirms it — Claude knows when not to attempt.</p>
 
-                <p><strong>1. Domain priming does not transfer to factual recall.</strong> GPT-4o Generic (−30.0 OI) and GPT-4o Specialized (−31.0 OI) are statistically indistinguishable. Adding the four BLD principles — identifier validity, information availability, universe construction, do-not-assume-validity — does not help the model recall ASC paragraph numbers or PCAOB rule codes. This supports the central project framing: <em>temporal reasoning and factual recall are orthogonal capabilities</em>.</p>
-
-                <p><strong>2. The two benchmarks rank models differently.</strong> GPT-4o leads BLD on every prompting strategy (highest accuracy: 85.1% with chain-of-thought). Claude Sonnet 4.5 leads AA-Omniscience (−12 OI vs −30/−31 for GPT-4o). Strong temporal reasoning does not imply strong factual recall, and vice versa. A model that excels at detecting "META could not have been used in 2018" is not necessarily better at recalling "ASC 340-40-25-6 is the correct citation."</p>
-
-                <p><strong>3. Claude's advantage is calibration, not knowledge.</strong> Claude's accuracy (35%) is only marginally higher than GPT-4o's (31–33%) — but Claude abstained from 12 questions while GPT-4o abstained from 0–2. Because OI treats abstention as neutral, 12 abstentions avoid 12 potential −1 deductions. The 72.3% hallucination rate vs GPT-4o's 89.9–94% confirms the pattern: when Claude attempts an answer it is wrong slightly less often, and it knows when not to attempt. This <em>willingness to abstain on uncertain regulatory detail</em> is precisely the calibration property AA-Omniscience was built to measure.</p>
-
-                <h3>What This Says About BLD</h3>
-
-                <p>The cross-benchmark experiment is a falsification test for the implicit claim that "domain priming makes models better at finance." It shows that the BLD prompt's effect is narrow and specific: it improves <em>temporal-validity auditing</em> (where it brings GPT-4o's false-valid rate to 0% on V5), but it does not generalize to <em>factual recall</em> on the same domain. This is a useful negative result. It bounds the practical scope of the BLD prompt — use it for what it was designed for, not as a generic "make the model better at finance" intervention. The full methodology, prompt adaptations, and per-question breakdown live in <a href="https://github.com/mohitapte4/Backtest-Lie-Detector/blob/main/writeup/AAOmniscience_results.md" target="_blank" rel="noopener">writeup/AAOmniscience_results.md</a>.</p>
+                <p>A useful negative result: the BLD prompt's effect is narrow and specific. It improves temporal-validity auditing but does not generalize to factual recall in the same domain. Full methodology and per-question breakdown in <a href="https://github.com/mohitapte4/Backtest-Lie-Detector/blob/main/writeup/AAOmniscience_results.md" target="_blank" rel="noopener">writeup/AAOmniscience_results.md</a>.</p>
 
 <div class="chart-container">
 <p class="chart-caption">Interactive: BLD Specialized prompt vs Generic — the OI gap is essentially zero (-30 vs -31), showing that domain priming does not transfer to factual recall. Grey markers are published AA-Omniscience Business-domain scores for reference.</p>
