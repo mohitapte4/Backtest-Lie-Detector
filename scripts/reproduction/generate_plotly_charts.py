@@ -468,8 +468,10 @@ def main():
     results_dir = REPO_ROOT / "outputs" / "results"
     charts_dir = REPO_ROOT / "docs" / "charts"
     snippets_dir = charts_dir / "snippets"
+    figures_dir = REPO_ROOT / "outputs" / "figures"
     charts_dir.mkdir(parents=True, exist_ok=True)
     snippets_dir.mkdir(parents=True, exist_ok=True)
+    figures_dir.mkdir(parents=True, exist_ok=True)
 
     # Cache the dataframes that get reused.
     df_cache: dict = {}
@@ -488,9 +490,15 @@ def main():
         snippet_path = snippets_dir / f"{name}.html"
         pio.write_html(fig, str(snippet_path), include_plotlyjs=False, full_html=False)
 
-        print(f"  {name:22s} -> {standalone_path.relative_to(REPO_ROOT)} + snippet")
+        # Static PNG export — for markdown viewers (e.g. GitHub) that strip JS
+        # and for notebook embedding where interactive Plotly does not render.
+        png_path = figures_dir / f"plotly_{name}.png"
+        pio.write_image(fig, str(png_path), width=1200, height=int(1200 * (fig.layout.height or 480) / 1000), scale=2)
+
+        print(f"  {name:22s} -> {standalone_path.relative_to(REPO_ROOT)} + snippet + PNG")
 
     print(f"\nWrote {len(CHART_BUILDERS)} charts to {charts_dir.relative_to(REPO_ROOT)}")
+    print(f"PNG fallbacks written to {figures_dir.relative_to(REPO_ROOT)}")
 
 
 if __name__ == "__main__":

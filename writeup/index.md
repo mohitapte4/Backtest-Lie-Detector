@@ -8,13 +8,13 @@
 
 Large Language Models are increasingly used to write, review, and audit trading strategies and financial research. But can they catch the subtle data leakage issues that invalidate backtests? We created a benchmark to find out.
 
-**Key Findings (V5 main benchmark, extended in V6):**
-> 1. LLMs are excellent at catching obvious violations but **overly cautious** on edge cases
-> 2. **Simple vs specialized prompts**: Generic prompts have higher accuracy on average, but **specialized prompts catch 100% of subtle violations**
-> 3. Models struggle to express uncertainty when the correct answer is ambiguous
-> 4. **The prompt engineering paradox is nuanced** - V5 false valid traps show specialized prompts matter for hard cases
+**Key Findings:**
+> 1. LLMs are reliable at catching obvious point-in-time violations but **overly cautious** on edge cases
+> 2. **The prompt-engineering effect is context-dependent**: leaner prompts (`minimal`, `default`) are sometimes fooled by subtle traps; specialized, few-shot, and chain-of-thought catch every trap
+> 3. Models under-express uncertainty: even on cases with insufficient information they default to "invalid" rather than "ambiguous"
+> 4. Domain priming via the `finance_auditor` prompt does **not** transfer to factual recall (see AA-Omniscience section)
 
-**V5 Results Summary (141 cases, Specialized / `zero_shot` prompt unless noted):**
+**Main-Benchmark Results Summary (141 cases, Specialized / `zero_shot` prompt unless noted):**
 - **GPT-4o (Generic):** 83.7% accuracy, 4.7% false valid rate
 - **GPT-4o (Specialized):** 80.9% accuracy, **0.0% false valid rate**
 - **GPT-4o + Chain-of-Thought:** **85.1% accuracy** (highest of any configuration), 0.0% false valid rate
@@ -25,7 +25,7 @@ Large Language Models are increasingly used to write, review, and audit trading 
 - **GPT-4o-mini (Specialized):** 62.4% accuracy, **0.0% false valid rate**, 97.6% false invalid rate
 - **On 16 subtle false-valid-trap cases:** GPT-4o Generic missed 4; GPT-4o Specialized missed 0 (one flagged ambiguous); all Claude variants missed 0; GPT-4o-mini missed 0
 
-Best configuration per metric (V5, full 4-model × 5-strategy sweep):
+Best configuration per metric (full 4-model × 5-strategy sweep on the main benchmark):
 - Highest accuracy: **GPT-4o / chain-of-thought (85.1%)**
 - Lowest false-valid rate: **Sonnet 4.5 / minimal (0.0%)** — ties multiple configs
 - Lowest false-invalid rate (least overcautious): **GPT-4o / few-shot (9.8%)**
@@ -49,41 +49,13 @@ These errors are easy to make and hard to catch. A backtest can look perfectly r
 
 ---
 
-## Relationship to Hallucination Benchmarks
+## The Benchmark
 
-Existing LLM benchmarks like AA-Omniscience and TruthfulQA test whether models make up facts. They ask questions like "What year did X happen?" and measure whether the model gives correct answers or hallucinates incorrect ones. These benchmarks test factual recall.
-
-Our benchmark tests something different: can LLMs recognize when events are out of chronological order? Instead of asking "What is the date?", we ask "Is this sequence of events possible given these dates?" This is anachronism detection rather than fact retrieval.
-
-| Aspect | Hallucination Benchmarks | This Benchmark |
-|--------|-------------------------|----------------|
-| Tests | Does the LLM know facts? | Does the LLM understand temporal ordering? |
-| Question type | "What is X?" | "Is this workflow chronologically valid?" |
-| Failure mode | Making up facts | Missing anachronisms |
-| Domain | General knowledge | Finance-specific workflows |
-
-Both types of benchmarks measure reliability, but they target different capabilities. A model could score well on factual recall (knowing that META started trading June 9, 2022) but still miss the anachronism when that fact appears in context (using META for a June 1, 2022 trade). Our benchmark tests whether models can apply temporal knowledge to detect impossible sequences.
-
----
-
-## Benchmark Evolution: V1 → V6
-
-The benchmark evolved over six iterations, each adding cases that targeted a specific weakness exposed by the prior version:
-
-| Version | Cases | Description | Key Finding |
-|---------|-------|-------------|-------------|
-| V1 | 42 | Original seed cases | 97.6% accuracy - too easy |
-| V2 | 69 | +17 adversarial, +10 WRDS | 95.7% accuracy - harder |
-| V3 | 105 | +36 hard source-backed | 84.8% accuracy - challenging |
-| V4 | 125 | +20 calibration-focused | 79.2% accuracy - overcaution revealed |
-| V5 | 141 | +16 false valid traps | Nuanced findings on prompt engineering |
-| **V6** | **+15 chronology, +12 code** (run as separate batteries) | Pure temporal reasoning and code auditing | **Overcaution persists outside the finance domain** |
-
-### V5 Benchmark Structure
+The main benchmark is 141 hand-curated cases organized into four modules. Two extension batteries — 15 chronology cases and 12 code cases — are evaluated separately, bringing the total evaluation matrix to **168 cases**. The chronology and code extensions exist to isolate temporal reasoning from finance-domain knowledge (see "Isolating Temporal Reasoning" below).
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    V5 Benchmark Structure (141 cases)                │
+│                  Main Benchmark (141 cases)                          │
 ├─────────────────────┬──────────────────┬───────────────────────────┤
 │ Ticker Time Machine │ Filing Clock     │ Accounting Availability   │
 │ (48 cases)          │ (31 cases)       │ (24 cases)                │
@@ -96,16 +68,13 @@ The benchmark evolved over six iterations, each adding cases that targeted a spe
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-**V5 False Valid Trap Cases (16 new):**
-- Workflows with **professional language** that sounds point-in-time valid
-- Hidden **implementation-level bugs** requiring dataset semantics knowledge
-- All labeled as `invalid` but designed to trigger **false valid errors**
+Among the 86 invalid cases, **16 are "false-valid traps"** — workflows with professional methodology language that hide subtle implementation-level bugs. These are the most informative cases for measuring whether a model can see past reassuring language; they get their own section below.
 
 ---
 
 ## Case Families (13 Source-Backed Families)
 
-V3/V4 includes hard cases based on real-world finance traps. Each family is tied to authoritative documentation:
+A large fraction of the main benchmark consists of hard cases based on real-world finance traps. Each family is tied to authoritative documentation:
 
 | # | Family | Example | Source |
 |---|--------|---------|--------|
@@ -158,17 +127,9 @@ A case is labeled ambiguous **only** when the prompt lacks information required 
 
 ---
 
-## V4 Results: Multi-Model Comparison
+## Comparison to Rule-Based Baselines
 
-### Model Leaderboard
-
-| Configuration | Accuracy | False Invalid | False Valid | Ambiguous Acc |
-|---------------|----------|---------------|-------------|---------------|
-| GPT-4o (Generic) | **84.8%** | **17.1%** | 0.0% | 21.4% |
-| GPT-4o (Specialized) | 79.2% | 31.7% | 0.0% | 21.4% |
-| Claude Sonnet 4.5 | 74.4% | 46.3% | 1.4% | 14.3% |
-
-### Baseline Comparison
+To check that the LLM approach is doing real work, we compared against four non-LLM baselines. All four are far worse than any LLM configuration on what matters most (false-valid rate):
 
 | Baseline | Accuracy | False Invalid | False Valid |
 |----------|----------|---------------|-------------|
@@ -177,102 +138,31 @@ A case is labeled ambiguous **only** when the prompt lacks information required 
 | Rule-Based | 38.4% | 14.6% | 81.4% |
 | Always Valid | 32.8% | 0.0% | 100.0% |
 
-**Key insight:** LLMs dramatically outperform rule-based approaches on violation detection (0–1.4% false valid vs 81–100%), while baselines help contextualize that LLM overcaution (17–46% false invalid) is still far better than naive "always invalid" (100%).
+The keyword and rule baselines hallucinate validity 81–83% of the time. Across our full 4-model × 5-strategy sweep on the main benchmark, the worst LLM configuration sits at 5.8% false-valid; the best at 0.0%. The improvement is real — LLMs are not just keyword-matching.
 
-### Repair Quality Analysis
+### Repair Quality
 
-Beyond classification, we evaluated whether models propose *useful* repairs (30 cases sampled per model):
+Beyond classification, we sampled 30 cases per model and graded the proposed repairs:
 
 | Model | Correct | Partial | Wrong/Vague |
 |-------|---------|---------|-------------|
-| Claude Sonnet | **66.7%** | 30.0% | 3.3% |
+| Claude Sonnet 4.5 | **66.7%** | 30.0% | 3.3% |
 | GPT-4o (Specialized) | 40.0% | 36.7% | 23.3% |
 | GPT-4o (Generic) | 36.7% | 26.7% | 36.7% |
 
-**Surprising finding:** Claude Sonnet produces significantly better repair suggestions despite lower classification accuracy. This suggests Claude's overcaution may stem from *deeper understanding* of potential issues, even when the workflow is actually valid.
-
-### The Surprising Finding: Simpler Is Better
-
-The generic prompt **outperformed** the specialized finance auditor prompt by 4 percentage points. This reveals a **prompt engineering paradox**: detailed domain expertise in the prompt may *increase* overcaution.
-
-### The Key Insight: Asymmetric Errors
-
-| Error Type | Specialized | Generic | Implication |
-|------------|-------------|---------|-------------|
-| False Valids (missed violations) | 0.0% | 0.0% | Both very safe on V4 |
-| False Invalids (overcautious) | 31.7% | 17.1% | Specialized is more cautious |
-| Valid Trap Accuracy | 59.1% | 77.3% | Generic handles edge cases better |
-
-**Both prompts never approve a truly invalid V4 workflow** (0.0% false valid rate), but the specialized prompt's extensive guidance about pitfalls makes it more likely to flag valid workflows as problematic.
-
-### Performance by Case Tag
-
-| Tag | Accuracy | Cases | Notes |
-|-----|----------|-------|-------|
-| `multi_violation` | 100% | 8 | Easy to catch multiple issues |
-| `requires_identifier_reasoning` | 78.6% | 14 | Ticker/PERMNO logic |
-| `requires_corporate_action_reasoning` | 62.5% | 8 | Spinoffs, splits |
-| `requires_dataset_semantics` | 61.5% | 13 | CRSP/Compustat fields |
-| `trap_valid` | 59.1% | 22 | Valid but suspicious |
-| `requires_timestamp_reasoning` | 43.8% | 16 | Filing timing |
-| `ambiguous` | 21.4% | 14 | Uncertainty expression |
+Claude produces significantly better repairs despite having lower classification accuracy — suggesting its overcaution may reflect deeper engagement with the workflow rather than reflexive flagging.
 
 ---
 
-## Failure Taxonomy
+## Selected Failure Examples
 
-### Primary Failure Mode: Overcaution
+Two cases illustrate the dominant overcaution failure mode. Both are situations where the model decided the workflow was broken because something *sounded* suspicious, when in fact the methodology was sound:
 
-The model errs toward caution in predictable ways:
+**Case `hard_ibm_crsp_adjusted_return`** — A researcher uses the CRSP `ret` field for IBM in November 2021 (the Kyndryl spinoff month). Expected: **valid** (CRSP `ret` already incorporates spinoff adjustments). Models flag it as `identifier_time_travel` — they don't know CRSP handles corporate actions, and the word "spinoff" triggers a violation flag regardless of how it was actually handled.
 
-1. **Dataset Semantics Blindness**: Doesn't understand that CRSP adjusted returns already incorporate spinoffs and dividends
+**Case `cal_ambig_compustat_unknown_lag`** — Compustat data used for a June portfolio with unspecified lag methodology. Expected: **ambiguous** (need more information to determine validity). Models call it `invalid (accounting_availability_leakage)` — they assume the worst case rather than expressing uncertainty.
 
-2. **Timestamp Overcaution**: Assumes timing problems when methodology is sound
-
-3. **Ambiguity Aversion**: Defaults to "invalid" rather than acknowledging uncertainty
-
-4. **Trigger-Happy on Keywords**: Flags "spinoff" or "ticker change" without analyzing whether it was handled correctly
-
-### Example Failures
-
-**Case: `hard_ibm_crsp_adjusted_return`**
-- Prompt: Researcher uses CRSP ret field for IBM in November 2021 (Kyndryl spinoff)
-- Expected: Valid (CRSP ret already incorporates spinoff adjustment)
-- Predicted: Invalid (identifier_time_travel)
-- **Lesson**: Model doesn't know CRSP handles corporate actions
-
-**Case: `cal_ambig_compustat_unknown_lag`**
-- Prompt: Compustat data used for June portfolio, lag methodology unspecified
-- Expected: Ambiguous (need more information)
-- Predicted: Invalid (accounting_availability_leakage)
-- **Lesson**: Model assumes worst case rather than expressing uncertainty
-
-Representative failures are summarized in the tables above; the raw result JSONL files are in `outputs/results/`.
-
----
-
-## Practical Implications
-
-### For Researchers Using LLMs as Auditors
-
-1. **Trust "valid" verdicts** - ~1% false valid rate means approval is reliable
-2. **Scrutinize "invalid" verdicts** - 17–46% are false alarms, review carefully
-3. **Consider simpler prompts** - detailed domain prompts may increase false positives
-4. **Treat "ambiguous" as "might be valid"** - model under-reports ambiguity
-5. **Provide detailed methodology** - unclear descriptions trigger false positives
-
-### For LLM Developers
-
-1. **Calibration matters** - models should express uncertainty appropriately
-2. **Dataset semantics training needed** - CRSP/Compustat field meanings
-3. **"Safe" ≠ "Good"** - overcaution reduces practical utility
-4. **Prompt engineering is counterintuitive** - more expertise in prompt can hurt
-
-### For Finance Education
-
-1. **LLMs catch obvious violations** - useful teaching tool
-2. **Edge cases reveal model limits** - trap valid cases are educational
-3. **Point-in-time thinking is essential** - benchmark demonstrates importance
+Both are the same underlying pattern: models would rather be wrong-in-a-cautious-direction than say "valid" or "ambiguous". Raw results for every case are in `outputs/results/*.jsonl`.
 
 ---
 
@@ -280,11 +170,11 @@ Representative failures are summarized in the tables above; the raw result JSONL
 
 The committed figures below are generated by `scripts/reproduction/generate_all_figures.py` from the JSONL result files in `outputs/results/`; `python scripts/reproduce.py` rebuilds the summary metrics and charts.
 
-### V5 overall accuracy across 4 models × 5 prompting strategies
+### Overall accuracy across 4 models × 5 prompting strategies
 
 ![All-model accuracy by prompting strategy](../outputs/figures/all_accuracy_by_strategy.png)
 
-Four model variants × five prompting strategies = 20 configurations on the V5 benchmark. **GPT-4o + chain-of-thought tops the chart at 85.1%** — the only configuration above 84%. GPT-4o is consistently the strongest model regardless of strategy (80–85%). Claude Sonnet 4.5 and 4.6 cluster around 77–82% with relatively little spread across strategies. Claude Haiku 4.5 is the weakest variant (71–78%) and is the one model that is *hurt* by chain-of-thought (drops to 71%).
+Four model variants × five prompting strategies = 20 configurations on the main benchmark. **GPT-4o + chain-of-thought tops the chart at 85.1%** — the only configuration above 84%. GPT-4o is consistently the strongest model regardless of strategy (80–85%). Claude Sonnet 4.5 and 4.6 cluster around 77–82% with relatively little spread across strategies. Claude Haiku 4.5 is the weakest variant (71–78%) and is the one model that is *hurt* by chain-of-thought (drops to 71%).
 
 ### Safety versus overcaution trade-off
 
@@ -306,110 +196,68 @@ Heatmap rows are difficulty buckets, columns are the 20 (model × strategy) conf
 
 ---
 
-## V5 False-Valid Traps: What Makes a Bug Convincing
+## False-Valid Traps: What Makes a Bug Convincing
 
-V4 found that generic prompts outperform specialized prompts on overall accuracy. V5 added 16 cases designed to *fool* a model — workflows with subtle implementation-level bugs hidden behind professional methodology language. This is where the V4 "generic wins" finding breaks down.
+Sixteen of the 86 invalid cases were designed specifically to *fool* the model — workflows with subtle implementation bugs hidden behind professional methodology language. These cases isolate one question: can a model see past reassuring prose? They are the most diagnostic cases in the benchmark because the failure mode they expose is the dangerous one: approving a broken workflow.
 
-### False Valid Trap Case Results
+### Trap-case results per configuration
 
-We designed 16 new cases that sound professional and valid but contain subtle implementation bugs:
+| Configuration | Trap Accuracy | Approved as valid |
+|---|---|---|
+| Claude Sonnet 4.5 (any strategy) | **100%** | 0 / 16 |
+| GPT-4o + zero_shot (specialized) | **93.8%** | 0 / 16 (1 flagged ambiguous) |
+| GPT-4o + few_shot | **75.0%** | 0 / 16 (4 flagged ambiguous) |
+| GPT-4o + chain_of_thought | **81.2%** | 0 / 16 (3 flagged ambiguous) |
+| GPT-4o-mini (any strategy) | **100%** | 0 / 16 |
+| GPT-4o + default | 87.5% | 2 / 16 |
+| GPT-4o + minimal | 87.5% | 2 / 16 |
+| Sonnet 4.6 + default | 68.8% | up to 5 / 16 |
 
-| Model | Trap Accuracy | False Valids | Cases Missed |
-|-------|--------------|--------------|--------------|
-| Claude Sonnet | **100%** | 0/16 | None |
-| GPT-4o (Specialized) | **93.8%** | 0/16 | None (1 flagged ambiguous) |
-| GPT-4o-mini (Generic) | **100%** | 0/16 | None |
-| GPT-4o-mini (Specialized) | **100%** | 0/16 | None |
-| GPT-4o (Generic) | 75.0% | **4/16** | 4 subtle bugs incorrectly approved |
+**The dangerous failure (approving as valid) is concentrated entirely in the leanest prompts.** `zero_shot`, `few_shot`, and `chain_of_thought` all bring GPT-4o's approval count to zero; they sometimes mislabel a trap as `ambiguous`, which hurts accuracy but is not an approval. Sonnet 4.5 catches all 16 under every strategy — the strongest trap-detection performance of any model. Notably, Sonnet 4.6 is *worse* than 4.5 on this axis (up to 5 approvals with the `default` prompt) even though 4.6 wins on overcaution overall — the most important practical caveat about using 4.6 for high-stakes audits.
 
-### Cases GPT-4o Generic Missed
+### The four traps the leanest GPT-4o prompt approves
 
-| Case | Bug | Reassuring Language |
-|------|-----|---------------------|
-| `fvt_lag_from_datadate` | Fixed 6-month lag from fiscal end varies by firm; should use rdq / filing date | "conservative lag avoids look-ahead bias" |
-| `fvt_dlret_replaces_ret` | Replaces RET with DLRET; should compound `(1+RET)*(1+DLRET)−1` to keep last-trading-day return | "following best practices" |
+The four false-valid traps that `default` GPT-4o approves illustrate *what kind of language fools a model*:
+
+| Trap case | The bug | Reassuring phrase |
+|---|---|---|
+| `fvt_lag_from_datadate` | Fixed 6-month lag from fiscal end varies by firm; should use `rdq` / filing date | "conservative lag avoids look-ahead bias" |
+| `fvt_dlret_replaces_ret` | Replaces RET with DLRET; should compound `(1+RET)*(1+DLRET) − 1` to keep last-trading-day return | "following best practices" |
 | `fvt_adjusted_price_level` | Uses CRSP split-adjusted prices for a `< $5` level filter; should use actual quoted PRC | "ensure historical comparability" |
 | `fvt_restated_despite_lag` | 2026 Compustat download contains values restated after the 2005-2015 backtest period | "lag fundamentals conservatively" |
 
-### The Nuanced Finding
-
-**V4 conclusion (simplified):** "Generic prompts beat specialized prompts"
-
-**V5 conclusion (nuanced):**
-- For **obvious violations**: Minimal and default prompts work fine and avoid overcaution
-- For **subtle violations**: Anything beyond minimal/default catches them — **specialized (`zero_shot`), `few_shot`, and `chain_of_thought` all hit 0% false-valid rate on V5**. The trap-failure is specific to the leaner prompts.
-- The simplest version of the finding: if you care about catching the subtle bugs, do not use the `default` prompt without examples or a structured reasoning step.
-
-### V4 vs V5 False Valid Rate Comparison
-
-| Model | V4 FVR (125 cases) | V5 FVR (141 cases) | Change |
-|-------|-------------------|-------------------|--------|
-| GPT-4o (Generic) | 0.0% | **4.7%** | **+4.7%** |
-| GPT-4o (Specialized) | 0.0% | **0.0%** | 0.0% |
-| Claude Sonnet | 1.4% | 1.2% | -0.2% |
-| GPT-4o-mini (Generic) | N/A | **0.0%** | — |
-| GPT-4o-mini (Specialized) | N/A | **0.0%** | — |
-
-The 16 trap cases drove the generic prompt's false-valid rate from 0% (on V4) to 4.7% — all four false-valids in V5 came from this new subset. The specialized prompt held perfect safety.
-
-See the Conclusion's "Practical Recommendations" table for the full per-priority recommendation grid; this section's role is to document *why* the trap cases motivated those recommendations, not to repeat them.
+The pattern is the same in every case: a phrase that *sounds* like sound methodology obscures a specific implementation mistake. The phrases that fooled the model are recognizable from finance textbooks and best-practice guides — that is the point.
 
 ---
 
-## GPT-4o-mini Results: Scale vs. Safety Trade-off
-
-We ran GPT-4o-mini on the full V5 benchmark (141 cases) with both prompt configurations to test whether a smaller, cheaper model could perform comparably.
-
-### Overall Metrics
-
-| Configuration | Accuracy | False Invalid | False Valid | Ambiguous Acc |
-|---------------|----------|---------------|-------------|---------------|
-| GPT-4o-mini (Generic) | 64.5% | **95.1%** | **0.0%** | 21.4% |
-| GPT-4o-mini (Specialized) | 62.4% | **97.6%** | **0.0%** | 7.1% |
-
-### Key Finding: Extreme Overcaution, Perfect Safety
-
-GPT-4o-mini never approves a genuinely invalid workflow (0% false valid rate) and catches all 16 subtle false-valid-trap cases. However, it flags nearly every valid workflow as problematic (95–98% false invalid rate), making it impractical for real auditing use.
-
-**Interpretation:** The smaller model appears to have learned a conservative heuristic — "financial research is often flawed, flag everything" — rather than the nuanced temporal reasoning needed to distinguish real violations from correct methodology. It is safe but not useful.
-
-### Comparison to GPT-4o
-
-| Metric | GPT-4o (Generic) | GPT-4o-mini (Generic) |
-|--------|-----------------|----------------------|
-| Accuracy | 83.0% | 64.5% |
-| False Invalid | 19.5% | 95.1% |
-| False Valid | 4.7% | 0.0% |
-| Trap Accuracy | 81.2% | 100% |
-
-The gap in false invalid rate (19.5% vs 95.1%) shows that GPT-4o-mini's lower accuracy comes almost entirely from overcaution, not from missing real violations. GPT-4o-mini is actually *safer* on subtle violations but dramatically less calibrated on valid cases.
+> **Aside on GPT-4o-mini.** We also ran GPT-4o-mini on the main benchmark; it sits at 62–65% accuracy with a **95–98% false-invalid rate** and 0% false-valid rate. It catches every real bug but flags nearly every valid workflow as problematic — safe but useless. The smaller model appears to have learned a conservative heuristic ("financial research is often flawed; flag everything") rather than the nuanced temporal reasoning needed to distinguish real violations from sound methodology.
 
 ---
 
-## V6: Isolating Temporal Reasoning from Domain Knowledge
+## Isolating Temporal Reasoning from Domain Knowledge
 
-V5 left an unanswered question. When a model fails to flag a buggy backtest, *what* is it failing at — temporal reasoning, finance domain knowledge, or both? Every V1–V5 case mixes the two: deciding whether "META on 2018-03-20" is an anachronism requires both knowing that META is a 2022 ticker and reasoning about whether 2018 < 2022.
+One question the main benchmark cannot answer on its own: when a model fails, *what* is it failing at — temporal reasoning, finance-domain knowledge, or both? Every case in the main benchmark mixes the two. Deciding whether "META on 2018-03-20" is an anachronism requires both knowing that META is a 2022 ticker and reasoning about whether 2018 < 2022.
 
-V6 is a methodology experiment that separates the two axes:
+Two extension batteries separate the axes:
 
 | Battery | Cases | What it isolates |
 |---------|-------|------------------|
 | **Chronology** | 15 | Pure temporal ordering. Cases name no real tickers or filings — just events with explicit timestamps. Tests "did A happen before B?" without any finance recall. |
 | **Code** | 12 | Same PIT-violation taxonomy but expressed as Python snippets instead of prose. Tests whether models can audit code semantics (wrong column choices, off-by-one shifts, comments that contradict the code) rather than just narrative. |
 
-Both batteries are run as standalone evaluations (`scripts/reproduction/run_v6_chronology_only.py` and `scripts/reproduction/run_code_cases_eval.py`) on the same three configurations as V5.
+Both batteries are run as standalone evaluations (`scripts/reproduction/run_v6_chronology_only.py` and `scripts/reproduction/run_code_cases_eval.py`) on three configurations: GPT-4o (Generic), GPT-4o (Specialized), and Claude Sonnet 4.5.
 
 ### Chronology: overcaution is not a finance problem
 
 ![V6-only accuracy by model and prompting strategy](../outputs/figures/all_v6only_accuracy.png)
 
-Every model hits **100%** on invalid (out-of-order) cases — anachronism detection itself is not the limiter. But on cases that are actually valid, the same models drop to **50–67%**. Stripping away CRSP semantics and ticker history did not improve calibration on valid cases. **The overcaution observed in V4–V5 is not specific to financial domain confusion** — it is a more general behavior of preferring "invalid" when any temporal complexity is present.
+Every model hits **100%** on invalid (out-of-order) cases — anachronism detection itself is not the limiter. But on cases that are actually valid, the same models drop to **50–67%**. Stripping away CRSP semantics and ticker history did not improve calibration on valid cases. **The overcaution observed on the main benchmark is not specific to financial domain confusion** — it is a more general behavior of preferring "invalid" when any temporal complexity is present.
 
-This matters for the writeup's earlier "overcaution comes from deeper understanding" hypothesis (suggested by Claude's high repair quality despite low accuracy): V6 weakens that hypothesis. Even cases requiring no domain understanding produce the same valid/invalid asymmetry, so overcaution is at least partly a response to surface-level temporal complexity, not just to deep semantic concerns.
+This matters for the earlier "overcaution comes from deeper understanding" hypothesis (suggested by Claude's high repair quality despite low accuracy): the chronology results weaken that hypothesis. Even cases requiring no domain understanding produce the same valid/invalid asymmetry, so overcaution is at least partly a response to surface-level temporal complexity, not just to deep semantic concerns.
 
 ### Code: the prompt paradox flips
 
-When the workflow is Python code instead of prose, the V5 ordering of models inverts in an interesting way:
+When the workflow is Python code instead of prose, the ordering of models inverts in an interesting way:
 
 | Model | Overall | Bug detection (8 invalid) | Trap-valid (4 correct snippets) |
 |-------|--------:|--------------------------:|--------------------------------:|
@@ -417,19 +265,68 @@ When the workflow is Python code instead of prose, the V5 ordering of models inv
 | GPT-4o (Specialized) | 58% | 88% | 0% |
 | Claude Sonnet | 67% | **100%** | 0% |
 
-Claude catches every code bug — including subtle ones like `code_shift_off_by_one` that the generic GPT-4o approves — but flags every single piece of correct code as buggy. The specialized GPT-4o prompt is no better than generic on bug detection (88% vs 88%) and is *worse* on correct code (0% vs 25%). On code, the V5 advice ("use specialized for safety") still holds for catching bugs but produces zero useful approvals.
+Claude catches every code bug — including subtle ones like `code_shift_off_by_one` that the generic GPT-4o approves — but flags every single piece of correct code as buggy. The specialized GPT-4o prompt is no better than generic on bug detection (88% vs 88%) and is *worse* on correct code (0% vs 25%). On code, the "use specialized for safety" advice still holds for catching bugs but produces zero useful approvals.
 
-### Overcaution across V6 tasks
+### Overcaution across both batteries
 
-Side-by-side, the asymmetry is consistent: for every (model, task) pair, accuracy on invalid is higher than accuracy on valid. This is the same shape we saw across V1–V5 but now on tasks that share *no surface features* with the finance benchmark — just the structural property of having a valid vs invalid label.
+Side-by-side, the asymmetry is consistent: for every (model, task) pair, accuracy on invalid is higher than accuracy on valid. This is the same shape we see on the main benchmark, but now on tasks that share *no surface features* with the finance benchmark — just the structural property of having a valid vs invalid label.
 
-### What V6 contributes
+### What these extensions contribute
 
-V6 is small (27 cases) and not meant to be a headline benchmark. Its purpose is methodological: it gives us two control conditions for separating capabilities. Future versions of the benchmark could exploit this:
+The chronology and code batteries together are 27 cases — small, and not meant as headline benchmarks. Their purpose is methodological: they give us two control conditions for separating capabilities. Future versions of the benchmark could exploit this:
 
 1. **Cross-tabulate by what's required.** A case that requires *both* finance knowledge and temporal reasoning failing is less informative than a case that requires only one — chronology lets us isolate which axis broke.
 2. **Test prompt interventions cleanly.** Adding "list your assumptions before deciding" to the prompt can now be tested on pure chronology (does it help reasoning?) and on code separately (does it help code reading?) before being deployed on the full finance benchmark.
 3. **Quantify the overcaution prior.** If a model is 50% on chronology-valid cases — flipping a coin on workflows with no actual issue — that sets a floor on how good it can ever be on finance-valid cases without further intervention.
+
+---
+
+## AA-Omniscience: Does the BLD Prompt Transfer to Factual Recall?
+
+The BLD `finance_auditor` system prompt encodes domain knowledge about *temporal reasoning* in finance: identifier validity, information availability, universe construction, and an explicit "do not assume validity" stance. A natural question is whether that domain priming also helps with *factual recall* of finance regulatory knowledge — exact ASC paragraph citations, PCAOB rule numbers, SEC filing requirements. We tested transferability by running the same prompt on a separate benchmark designed to measure factual recall and hallucination.
+
+[AA-Omniscience](https://artificialanalysis.ai/) is a 6,000-question knowledge benchmark from Artificial Analysis. It scores models using the **Omniscience Index** (OI), which rewards correct answers and penalizes confident wrong ones while treating abstention as neutral:
+
+$$\text{OI} = 100 \cdot \frac{c - i}{c + p + i + a}$$
+
+where $c$, $p$, $i$, $a$ are counts of CORRECT, PARTIALLY_CORRECT, INCORRECT, and NOT_ATTEMPTED responses. The companion **hallucination rate** measures the fraction of non-correct responses that were outright wrong (rather than partial or abstained). We tested 100 Finance-domain questions on three configurations: GPT-4o with a plain "answer concisely" instruction, GPT-4o with the full BLD `finance_auditor` prompt, and Claude Sonnet 4.5 with the same BLD prompt. The full methodology is in [`writeup/AAOmniscience_results.md`](AAOmniscience_results.md).
+
+### Overall Results
+
+| Configuration | OI Index | Accuracy | Hallucination Rate | Correct | Partial | Incorrect | Abstained |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| GPT-4o Generic | **−30.0** | 33.0% | 94.0% | 33 | 4 | 63 | 0 |
+| GPT-4o + BLD Specialized | **−31.0** | 31.0% | 89.9% | 31 | 5 | 62 | 2 |
+| Claude Sonnet 4.5 + BLD Specialized | **−12.0** | 35.0% | 72.3% | 35 | 6 | 47 | 12 |
+| GPT-4o published (Business) | −6.0 | — | 38.0% | — | — | — | — |
+| Claude Sonnet published (Business) | +1.0 | — | 29.0% | — | — | — | — |
+
+The bottom two rows are Artificial Analysis's own published OI scores for the same models on their Business-domain leaderboard. Our absolute scores are lower because we used GPT-4o as the grading judge (Artificial Analysis uses Gemini Flash); the *relative ordering* across our three configurations is internally valid since all used identical methodology.
+
+### By Topic
+
+| Topic | Questions | GPT-4o Generic | GPT-4o Specialized | Claude Sonnet |
+|---|---:|---:|---:|---:|
+| Accounting | 20 | −20.0 | −10.0 | −20.0 |
+| Business & Management | 10 | −40.0 | −40.0 | **+30.0** |
+| Corporate & Markets | 20 | −30.0 | −35.0 | −5.0 |
+| Economics | 20 | −25.0 | −30.0 | +5.0 |
+| Financial Institutions | 15 | −13.3 | −13.3 | −20.0 |
+| Investments | 15 | −60.0 | −66.7 | −53.3 |
+
+The Investments topic is the hardest across every configuration. These questions involve exact index methodology rules, specific thresholds, and precise institutional definitions — at the outer edge of what any of these models has reliably memorized.
+
+### Three Findings
+
+**1. Domain priming does not transfer to factual recall.** GPT-4o Generic (−30.0 OI) and GPT-4o Specialized (−31.0 OI) are statistically indistinguishable. Adding the four BLD principles — identifier validity, information availability, universe construction, do-not-assume-validity — does not help the model recall ASC paragraph numbers or PCAOB rule codes. This supports the central project framing: *temporal reasoning and factual recall are orthogonal capabilities*.
+
+**2. The two benchmarks rank models differently.** GPT-4o leads BLD on every prompting strategy (highest accuracy: 85.1% with chain-of-thought). Claude Sonnet 4.5 leads AA-Omniscience (−12 OI vs −30/−31 for GPT-4o). Strong temporal reasoning does not imply strong factual recall, and vice versa. A model that excels at detecting "META could not have been used in 2018" is not necessarily better at recalling that "ASC 340-40-25-6 is the correct citation."
+
+**3. Claude's advantage is calibration, not knowledge.** Claude's accuracy (35%) is only marginally higher than GPT-4o's (31–33%) — but Claude abstained from 12 questions while GPT-4o abstained from 0–2. Because OI treats abstention as neutral (rather than penalizing it like an incorrect answer), 12 abstentions avoid 12 potential −1 deductions. The 72.3% hallucination rate vs GPT-4o's 89.9–94% confirms the same pattern: when Claude attempts an answer it is wrong slightly less often, and it knows when not to attempt. This *willingness to abstain on uncertain regulatory detail* is precisely the calibration property AA-Omniscience was built to measure.
+
+### What This Says About the BLD Project
+
+The cross-benchmark experiment is a falsification test for the implicit claim that "domain priming makes models better at finance." It shows that the BLD prompt's effect is narrow and specific: it improves *temporal-validity auditing* (where it brings GPT-4o's false-valid rate to 0% on the main benchmark), but it does not generalize to *factual recall* on the same domain. This is a useful negative result. It bounds the practical scope of the BLD prompt — use it for what it was designed for, not as a generic "make the model better at finance" intervention.
 
 ---
 
@@ -438,8 +335,8 @@ V6 is small (27 cases) and not meant to be a headline benchmark. Its purpose is 
 1. **Five model variants tested** - GPT-4o, GPT-4o-mini, Claude Sonnet 4.5, Claude Sonnet 4.6, Claude Haiku 4.5. Reasoning-tier models (e.g. o1, o3, Claude Opus) are not in scope; adding them would test whether the overcaution pattern persists at higher capability.
 2. **Five prompting strategies tested** - `minimal`, `default`, `zero_shot` (specialized finance-auditor), `few_shot` (3 examples), `chain_of_thought`. More strategies (self-critique, multi-pass, tool-use) could yield further gains.
 3. **Ground truth requires domain expertise** - Some trap valid cases have debatable answers (see protocol above)
-4. **Benchmark size** - 141 main cases (V5) plus 27 V6 cases; covers main patterns but not exhaustively
-5. **V6 batteries are small** - 15 chronology and 12 code cases are enough to expose the overcaution pattern but not to make fine-grained claims about specific case types
+4. **Benchmark size** - 141 main cases plus 27 extension cases (chronology + code); covers main patterns but not exhaustively
+5. **Extension batteries are small** - 15 chronology and 12 code cases are enough to expose the overcaution pattern but not to make fine-grained claims about specific case types
 6. **No fine-tuning** - Using base model capabilities only
 7. **English only** - All prompts and cases in English
 
@@ -496,34 +393,23 @@ python scripts/reproduction/generate_v6_figures.py      # produces v6_*.png in o
 
 ## Conclusion
 
-**Main Findings (V5 + V6):**
-1. LLMs are reliable at catching obvious point-in-time violations (~99% catch rate)
-2. Overcaution is the primary failure mode (17–46% false invalid rate)
-3. **Prompt engineering matters, but is context-dependent:**
-   - Minimal / default prompts: catch obvious violations cheaply but can miss subtle ones (GPT-4o `default` approves 4/16 false-valid traps)
-   - Specialized (`zero_shot`) prompts: lower overall accuracy due to overcaution, but **0% false-valid rate** on both V4 and V5
-   - Few-shot: best calibration on GPT-4o (9.8% false-invalid, 0% false-valid on V5)
-   - Chain-of-thought: highest GPT-4o accuracy (85.1% on V5) but neutral or negative for Claude variants
-4. **Accuracy and repair quality are inversely correlated** - Claude has lowest accuracy but best repairs
-5. **Subtle violations require domain expertise** - generic prompts missed 4/16 false valid trap cases
-6. **Overcaution is not a finance-domain problem (V6)** — on pure chronology cases stripped of any finance content, every model still hits 100% on invalid and only 50–67% on valid. The valid/invalid asymmetry is a general behavior, not a finance-specific one.
-7. **The prompt paradox inverts on code (V6)** — Claude catches 100% of code bugs (vs 88% for both GPT-4o configs) but flags 100% of correct snippets. Specialized prompting helps on bugs only in prose, not in code.
+LLMs are reliable as point-in-time auditors *for what the auditor task actually is*: catching real bugs. The dangerous failure mode — approving a broken workflow — happens between 0% and 5.8% of the time across the full 4-model × 5-strategy sweep, versus 81–83% for rule-based and keyword baselines. There is real understanding behind these numbers, not pattern matching.
 
-**Practical Recommendations:**
+The dominant failure mode is the *annoying* one: overcaution. Models flag 17–46% of valid workflows as broken depending on configuration. Claude Sonnet 4.6 is the most balanced calibrator (≤15% false-invalid across every strategy); GPT-4o + chain-of-thought has the highest accuracy (85.1%); GPT-4o + few-shot has the lowest overcaution (9.8% false-invalid); Sonnet 4.5 catches 100% of the subtle traps under every prompting strategy. Accuracy and repair quality are inversely correlated — Claude has the lowest overall accuracy but the best repair suggestions, suggesting its overcaution reflects deeper engagement rather than reflex flagging.
+
+The two methodology extensions (chronology + code; AA-Omniscience) tell a single negative result: **the overcaution and the prompt-priming effects do not generalize**. Overcaution persists when the cases are stripped of finance content (chronology shows the same valid/invalid asymmetry); the domain-priming benefit from the `finance_auditor` prompt does not transfer to factual recall (AA-Omniscience OI is unchanged between Generic and Specialized GPT-4o). Both results bound the practical scope of the BLD approach — it is a *temporal-reasoning auditor*, not a *finance-domain enhancer*.
+
+### Practical Recommendations
 
 | Priority | Recommendation |
 |----------|---------------|
-| **Best Accuracy** | GPT-4o + chain-of-thought (85.1% on V5) |
-| **Maximum Safety** | Claude Sonnet 4.5 + minimal prompt (0% false valid rate) |
-| **Least Overcautious** | GPT-4o + few-shot (9.8% false-invalid rate) |
+| **Best Accuracy** | GPT-4o + chain-of-thought (85.1%) |
+| **Maximum Safety** | Claude Sonnet 4.5 + any strategy (catches all 16 traps) |
+| **Least Overcautious** | GPT-4o + few-shot (9.8% false-invalid) |
 | **Most Balanced Calibration** | Claude Sonnet 4.6 (≤15% false-invalid across every strategy) |
-| **Best Repairs** | Claude Sonnet 4.5 (67% correct repairs on V4 sample) |
-| **Subtle/Complex Cases** | Specialized (`zero_shot`) or `few_shot` prompt |
-| **Simple/Obvious Cases** | `minimal` or `default` prompt |
-
-**The V5 insight:** The V4 finding that "generic beats specialized" was partially an artifact of obvious invalid cases. When we added 16 subtle violations with professional language, the generic prompt failed on 4 cases while specialized and Claude caught all 16.
-
-**Compared to Baselines:** LLMs dramatically outperform rule-based approaches. Across the full 4-model × 5-strategy V5 sweep, false-valid rate stays between 0% and 5.8% (V6-only cases push the worst configuration to 7.7%) versus the keyword-suspicion and rule-based baselines at 81–83%. The improvement holds for every model and every prompting strategy we tested, demonstrating genuine understanding beyond keyword matching.
+| **Best Repairs** | Claude Sonnet 4.5 (67% correct repairs on sampled cases) |
+| **Subtle / complex methodology** | Specialized (`zero_shot`) or `few_shot` prompt |
+| **Simple / obvious cases** | `minimal` or `default` prompt |
 
 ---
 
@@ -536,8 +422,8 @@ This project was developed with AI assistance:
 - **Benchmark cases**: Templates AI-generated, all human-reviewed
 
 **Human contributions:**
-- Benchmark design and methodology (V1–V6, including the V6 chronology + code methodology contribution)
-- Ground truth validation (all 141 V5 cases + 27 V6 cases)
+- Benchmark design and methodology, including the chronology + code methodology contribution
+- Ground truth validation (all 141 main-benchmark cases + 27 extension cases)
 - Results interpretation and failure analysis
 - Case family research and source verification
 
