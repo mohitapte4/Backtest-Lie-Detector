@@ -8,6 +8,19 @@ and quantitative finance workflows. The project focuses on mistakes such as
 look-ahead bias, ticker time travel, filing-clock leakage, survivorship bias,
 and incorrect use of delisting or corporate-action data.
 
+## Submission files
+
+Mapping of each submission requirement to where it lives in this repo:
+
+| Requirement | Location |
+| --- | --- |
+| Primary notebook / report file with the core work | [`notebooks/00_main_report.ipynb`](notebooks/00_main_report.ipynb) — full end-to-end pipeline with embedded figures and a live-demo cell. |
+| Audience-facing writeup (scannable without setup) | Published at [backtest-lie-detector.pagehaven.io](https://backtest-lie-detector.pagehaven.io/) (hosted on PageHaven). Source files: [`docs/index.html`](docs/index.html) and markdown at [`writeup/index.md`](writeup/index.md). |
+| README with reproduction instructions | This file — see [Reproduce the submitted outputs](#reproduce-the-submitted-outputs). |
+| Package notes | [`requirements.txt`](requirements.txt) and [`pyproject.toml`](pyproject.toml) (`pip install -e ".[all]"`). |
+| Supporting code, prompts, schemas, scripts | Installable package at [`src/backtest_lie_detector/`](src/backtest_lie_detector/) (schemas, prompts, model clients, scoring, validators, benchmark generators). Reproduction scripts at [`scripts/reproduction/`](scripts/reproduction/). |
+| AI usage statement | [`writeup/index.md` § AI Usage Statement](writeup/index.md#ai-usage-statement). |
+
 ## What is in the repo?
 
 | Area | Purpose |
